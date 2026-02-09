@@ -1,0 +1,206 @@
+@import url('https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Noto+Sans+Arabic:wght@300;400;500;600;700&display=swap');
+
+@tailwind base;
+
+/* Marquee animation for flash messages */
+@keyframes marquee {
+  0% {
+    transform: translateX(0%);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+.animate-marquee {
+  animation: marquee 15s linear infinite;
+}
+
+/* Smooth marquee animation */
+@keyframes marquee-smooth {
+  0% {
+    transform: translateX(0%);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+.animate-marquee-smooth {
+  animation: marquee-smooth 25s linear infinite;
+}
+
+/* Shimmer animation for announcements */
+@keyframes shimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+.animate-shimmer {
+  animation: shimmer 3s ease-in-out infinite;
+}
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 35 30% 96%;
+    --foreground: 25 25% 15%;
+    --card: 35 25% 93%;
+    --card-foreground: 25 25% 15%;
+    --popover: 35 25% 93%;
+    --popover-foreground: 25 25% 15%;
+    --primary: 145 35% 35%;
+    --primary-foreground: 35 30% 96%;
+    --secondary: 35 20% 88%;
+    --secondary-foreground: 25 25% 20%;
+    --muted: 35 15% 85%;
+    --muted-foreground: 25 15% 45%;
+    --accent: 42 65% 50%;
+    --accent-foreground: 25 20% 10%;
+    --destructive: 0 65% 50%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 35 20% 80%;
+    --input: 35 20% 85%;
+    --ring: 145 35% 35%;
+    --radius: 0.75rem;
+
+    --sidebar-background: 35 25% 94%;
+    --sidebar-foreground: 25 25% 20%;
+    --sidebar-primary: 145 35% 35%;
+    --sidebar-primary-foreground: 35 30% 96%;
+    --sidebar-accent: 35 20% 88%;
+    --sidebar-accent-foreground: 25 25% 20%;
+    --sidebar-border: 35 20% 80%;
+    --sidebar-ring: 145 35% 35%;
+  }
+
+  .dark {
+    --background: 25 20% 12%;
+    --foreground: 35 25% 92%;
+    --card: 25 18% 16%;
+    --card-foreground: 35 25% 92%;
+    --popover: 25 18% 16%;
+    --popover-foreground: 35 25% 92%;
+    --primary: 145 40% 45%;
+    --primary-foreground: 25 20% 10%;
+    --secondary: 25 15% 22%;
+    --secondary-foreground: 35 25% 88%;
+    --muted: 25 12% 25%;
+    --muted-foreground: 35 15% 60%;
+    --accent: 42 65% 50%;
+    --accent-foreground: 25 20% 10%;
+    --destructive: 0 55% 45%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 25 15% 28%;
+    --input: 25 15% 25%;
+    --ring: 145 40% 45%;
+
+    --sidebar-background: 25 18% 14%;
+    --sidebar-foreground: 35 25% 88%;
+    --sidebar-primary: 145 40% 45%;
+    --sidebar-primary-foreground: 25 20% 10%;
+    --sidebar-accent: 25 15% 22%;
+    --sidebar-accent-foreground: 35 25% 88%;
+    --sidebar-border: 25 15% 28%;
+    --sidebar-ring: 145 40% 45%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+    font-family: 'Noto Sans Arabic', 'Tajawal', sans-serif;
+    font-feature-settings: 'liga' 1, 'calt' 1;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Amiri', serif;
+    font-weight: 700;
+  }
+  
+  /* تحسين القراءة للنص العربي */
+  p, span, div, li, td, th, label, input, textarea, button, a {
+    line-height: 1.8;
+    letter-spacing: 0.01em;
+  }
+}
+
+.islamic-pattern {
+  background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23000000' fill-opacity='0.03'%3E%3Cpath d='M30 0l30 30-30 30L0 30 30 0zm0 10L10 30l20 20 20-20-20-20z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+}
+
+/* Reading Mode - Dynamic Font Size */
+:root {
+  --reading-font-size: 16px;
+}
+
+/* Apply reading font size globally to main content areas */
+body {
+  font-size: var(--reading-font-size);
+}
+
+main,
+.main-content,
+section p,
+section span,
+section h1,
+section h2,
+section h3,
+section h4,
+section h5,
+section h6,
+.question-form-content,
+.card p,
+.card span,
+.card h1,
+.card h2,
+.card h3,
+.card h4 {
+  font-size: var(--reading-font-size);
+}
+
+/* Specific content areas that should scale */
+.reading-mode-content,
+.reading-mode-content p,
+.reading-mode-content span,
+.reading-mode-content div,
+.reading-mode-content li {
+  font-size: var(--reading-font-size) !important;
+}
+
+/* High Contrast Mode */
+.high-contrast {
+  --background: 0 0% 100%;
+  --foreground: 0 0% 0%;
+  --card: 0 0% 98%;
+  --card-foreground: 0 0% 0%;
+  --muted: 0 0% 90%;
+  --muted-foreground: 0 0% 20%;
+  --border: 0 0% 70%;
+}
+
+.dark.high-contrast {
+  --background: 0 0% 0%;
+  --foreground: 0 0% 100%;
+  --card: 0 0% 8%;
+  --card-foreground: 0 0% 100%;
+  --muted: 0 0% 15%;
+  --muted-foreground: 0 0% 80%;
+  --border: 0 0% 40%;
+}
+
+/* Enhanced text readability for high contrast */
+.high-contrast p,
+.high-contrast span,
+.high-contrast div {
+  font-weight: 500;
+}

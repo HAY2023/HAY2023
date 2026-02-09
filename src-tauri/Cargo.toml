@@ -1,0 +1,8 @@
+[package]
+name = "sandouq_fatwa"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+
+# Tauri will manage required dependencies when building
