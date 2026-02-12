@@ -1,0 +1,19 @@
+[package]
+name = "sandouq-fatwa"
+version = "1.0.4"
+description = "صندوق فتوى - مسجد الإيمان"
+authors = ["Youcef HAMOUALI"]
+edition = "2021"
+
+[lib]
+name = "sandouq_fatwa_lib"
+crate-type = ["staticlib", "cdylib", "lib"]
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+tauri = { version = "2", features = [] }
+tauri-plugin-shell = "2"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"

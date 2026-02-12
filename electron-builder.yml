@@ -1,0 +1,32 @@
+appId: app.sandouq-fatwa
+productName: "صندوق فتوى"
+copyright: "مسجد الإيمان - 150 مسكن"
+
+directories:
+  output: release
+  buildResources: build
+
+files:
+  - dist/**/*
+  - electron/**/*
+  - package.json
+
+win:
+  target:
+    - target: nsis
+      arch:
+        - x64
+  icon: public/favicon.jpg
+  artifactName: "${productName}-${version}-setup.${ext}"
+
+nsis:
+  oneClick: false
+  perMachine: false
+  allowToChangeInstallationDirectory: true
+  deleteAppDataOnUninstall: false
+  createDesktopShortcut: true
+  createStartMenuShortcut: true
+  shortcutName: "صندوق فتوى"
+  installerLanguages:
+    - ar
+    - en
