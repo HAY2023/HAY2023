@@ -1,6 +1,6 @@
 {
-  "productName": "صندوق فتوى",
-  "version": "1.0.9",
+  "productName": "Sandouq Fatwa",
+  "version": "1.0.10",
   "identifier": "app.sandouq-fatwa",
   "build": {
     "frontendDist": "../dist",
