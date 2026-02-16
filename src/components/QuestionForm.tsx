@@ -11,7 +11,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
-import { CheckCircle, Send, Tag, MessageSquare, Sparkles, Loader2, WifiOff, CloudUpload, Eye, Pencil, Trash2, X, AlertTriangle } from 'lucide-react';
+import { CheckCircle, Send, Tag, MessageSquare, Sparkles, Loader2, WifiOff, CloudUpload, Eye, Pencil, Trash2, X, AlertTriangle, Clock } from 'lucide-react';
 import { VoiceInput } from '@/components/VoiceInput';
 import {
   Dialog,
@@ -221,10 +221,22 @@ export function QuestionForm() {
   if (isSubmitted) {
     return (
       <div className="text-center py-8 animate-in fade-in duration-500">
-        <CheckCircle className="w-16 h-16 text-primary mx-auto mb-6" />
-        <h3 className="text-2xl font-bold mb-4">{t('form.successTitle')}</h3>
+        {!isOnline ? (
+          <Clock className="w-16 h-16 text-amber-500 mx-auto mb-6 animate-pulse" />
+        ) : (
+          <CheckCircle className="w-16 h-16 text-primary mx-auto mb-6" />
+        )}
+        <h3 className="text-2xl font-bold mb-4">
+          {!isOnline
+            ? (i18n.language === 'ar' ? 'تم الحفظ في المسودات' : 'Saved to Drafts')
+            : t('form.successTitle')
+          }
+        </h3>
         <p className="text-muted-foreground text-lg mb-8 max-w-md mx-auto">
-          {t('form.successMessage')}
+          {!isOnline
+            ? (i18n.language === 'ar' ? 'سؤالك لم يُرسل بعد؛ تم حفظه محلياً وسيتم إرساله تلقائياً فور توفر الإنترنت.' : 'Your question was not sent yet; it is saved locally and will be sent automatically once online.')
+            : t('form.successMessage')
+          }
         </p>
         <Button onClick={handleReset} variant="outline" size="lg">
           {t('form.submitAnother')}
