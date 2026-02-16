@@ -224,10 +224,7 @@ export function QuestionForm() {
         <CheckCircle className="w-16 h-16 text-primary mx-auto mb-6" />
         <h3 className="text-2xl font-bold mb-4">{t('form.successTitle')}</h3>
         <p className="text-muted-foreground text-lg mb-8 max-w-md mx-auto">
-          {!isOnline
-            ? (i18n.language === 'ar' ? 'تم حفظ سؤالك وسيُرسل عند الاتصال بالإنترنت' : 'Your question was saved and will be sent when online')
-            : t('form.successMessage')
-          }
+          {t('form.successMessage')}
         </p>
         <Button onClick={handleReset} variant="outline" size="lg">
           {t('form.submitAnother')}

@@ -1,6 +1,6 @@
 {
   "productName": "Sandouq Fatwa",
-  "version": "1.0.18",
+  "version": "1.0.19",
   "identifier": "app.sandouq-fatwa",
   "build": {
     "frontendDist": "../dist",

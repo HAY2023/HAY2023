@@ -13,7 +13,7 @@ import { QuestionCounter } from '@/components/QuestionCounter';
 import { Button } from '@/components/ui/button';
 import { BookOpen, Menu, X, Download, MessageSquare } from 'lucide-react';
 import { useBrowserNotifications } from '@/hooks/useBrowserNotifications';
-import mosqueImage from '@/assets/mosque-hero.jpg';
+import mosqueImage from '@/assets/mosque-exterior.jpg';
 import ShareButton from '@/components/ShareButton';
 import ReadingMode from '@/components/ReadingMode';
 import ReportProblem from '@/components/ReportProblem';
@@ -81,14 +81,13 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-background" dir={isRTL ? 'rtl' : 'ltr'}>
       {/* Sticky Navigation */}
-      <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-        isScrolled 
-          ? 'bg-background/95 backdrop-blur-md shadow-lg border-b border-border' 
+      <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${isScrolled
+          ? 'bg-background/95 backdrop-blur-md shadow-lg border-b border-border'
           : 'bg-transparent'
-      }`}>
+        }`}>
         <div className="container mx-auto px-4 py-3">
           <div className="flex items-center justify-between">
-            <div 
+            <div
               className="flex items-center gap-3 cursor-default select-none"
               onClick={handleLogoTap}
             >
@@ -104,12 +103,12 @@ const Index = () => {
               <ReadingMode />
               <LanguageSwitcher variant={isScrolled ? 'default' : 'hero'} />
               <ThemeToggle />
-              <Button 
+              <Button
                 onClick={scrollToForm}
                 variant="secondary"
                 size="sm"
-                className={isScrolled 
-                  ? '' 
+                className={isScrolled
+                  ? ''
                   : 'bg-primary-foreground/90 text-foreground hover:bg-primary-foreground'
                 }
               >
@@ -118,7 +117,7 @@ const Index = () => {
             </div>
 
             {/* Mobile Menu Button */}
-            <button 
+            <button
               className="md:hidden p-2"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             >
@@ -150,12 +149,12 @@ const Index = () => {
 
       {/* Hero Section */}
       <section className="relative h-[60vh] min-h-[400px] flex items-center justify-center overflow-hidden">
-        <div 
+        <div
           className="absolute inset-0 bg-cover bg-center"
           style={{ backgroundImage: `url(${mosqueImage})` }}
         />
         <div className="absolute inset-0 bg-gradient-to-b from-foreground/60 via-foreground/50 to-foreground/70" />
-        
+
         <div className="relative z-10 text-center px-4 pt-16">
           <div className="w-16 h-1 bg-primary mx-auto mb-6" />
           <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-primary-foreground mb-4">
@@ -190,8 +189,8 @@ const Index = () => {
       {settings?.show_countdown && settings?.next_session_date && (
         <section className="py-8 px-4 bg-secondary/30">
           <div className="container mx-auto max-w-xl">
-            <CountdownTimer 
-              targetDate={settings.next_session_date} 
+            <CountdownTimer
+              targetDate={settings.next_session_date}
               style={settings.countdown_style ?? 1}
               bgColor={settings.countdown_bg_color ?? undefined}
               textColor={settings.countdown_text_color ?? undefined}
@@ -208,7 +207,7 @@ const Index = () => {
           <div className="mb-8">
             <AnnouncementBanner />
           </div>
-          
+
           {settings?.is_box_open !== false ? (
             <>
               <div className="text-center mb-8">
@@ -256,12 +255,12 @@ const Index = () => {
             )}
             <ShareButton />
           </div>
-          
+
           {/* Report Problem */}
           <div className="pt-2">
             <ReportProblem />
           </div>
-          
+
           <p className="text-sm text-muted-foreground">{t('footer.mosqueName')}</p>
         </div>
       </footer>
