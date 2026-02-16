@@ -466,20 +466,43 @@ const AdminPage = () => {
       .on(
         'postgres_changes',
         { event: 'INSERT', schema: 'public', table: 'questions' },
-        (payload) => {
+        async (payload) => {
           if (soundEnabled) {
             playNotificationSound();
           }
           loadQuestions();
 
-          // إرسال إشعار المتصفح
-          if ('Notification' in window && Notification.permission === 'granted') {
-            const question = payload.new as { category?: string; question_text?: string };
-            new Notification('📩 سؤال جديد!', {
-              body: `فئة: ${getCategoryLabel(question.category || 'other')}\n${question.question_text?.slice(0, 50) || ''}...`,
-              icon: '/icon-mosque.png',
-              tag: 'new-question',
-            });
+          const question = payload.new as { category?: string; question_text?: string };
+          const title = '📩 سؤال جديد!';
+          const body = `فئة: ${getCategoryLabel(question.category || 'other')}\n${question.question_text?.slice(0, 50) || ''}...`;
+
+          // Try native notification first (Tauri)
+          try {
+            const { isPermissionGranted, requestPermission, sendNotification } = await import('@tauri-apps/plugin-notification');
+            let permission = await isPermissionGranted();
+            if (!permission) {
+              const permissionRes = await requestPermission();
+              permission = permissionRes === 'granted';
+            }
+
+            if (permission) {
+              sendNotification({
+                title,
+                body,
+                icon: 'icon-mosque',
+              });
+            } else {
+              // Fallback to browser if native permission denied
+              if ('Notification' in window && Notification.permission === 'granted') {
+                new Notification(title, { body, icon: '/icon-mosque.png', tag: 'new-question' });
+              }
+            }
+          } catch (e) {
+            console.warn('Native notification failed in realtime listener:', e);
+            // Fallback to Browser Notification API
+            if ('Notification' in window && Notification.permission === 'granted') {
+              new Notification(title, { body, icon: '/icon-mosque.png', tag: 'new-question' });
+            }
           }
 
           toast({ title: '📩 سؤال جديد', description: 'تم استلام سؤال جديد' });
