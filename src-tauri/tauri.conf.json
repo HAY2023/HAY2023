@@ -30,8 +30,7 @@
     "active": true,
     "targets": [
       "nsis",
-      "dmg",
-      "apk"
+      "dmg"
     ],
     "icon": [
       "icons/32x32.png",
