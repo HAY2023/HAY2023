@@ -112,7 +112,7 @@ export default function Install() {
   const content = {
     ar: {
       title: 'تثبيت التطبيق',
-      appName: 'صندوق فتوى',
+      appName: 'صندوق الفتوى مسجد الإيمان',
       subtitle: 'مسجد الإيمان – 150 مسكن',
       downloadBtn: 'تثبيت',
       downloading: 'جارٍ التثبيت...',

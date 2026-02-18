@@ -29,10 +29,10 @@ export default defineConfig(({ mode }) => ({
 
     VitePWA({
       registerType: "autoUpdate",
-      includeAssets: ["favicon.jpg", "icon-512.png"],
+      includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'mask-icon.svg', 'icon-mosque.png'],
       manifest: {
-        name: "صندوق فتوى - مسجد الإيمان 150 مسكن",
-        short_name: "صندوق فتوى",
+        name: "صندوق الفتوى مسجد الإيمان - 150 مسكن",
+        short_name: "صندوق الفتوى",
         description: "نجمع استفساراتكم الشرعية ويتم الإجابة عليها في حلقات دورية بمسجد الإيمان",
         theme_color: "#1a1a2e",
         background_color: "#0f0f1a",

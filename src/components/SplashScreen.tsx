@@ -128,7 +128,7 @@ export function SplashScreen({ onComplete, duration = 2800 }: SplashScreenProps)
               <div className="relative w-32 h-32 md:w-40 md:h-40 rounded-3xl bg-card border-2 border-border shadow-2xl flex items-center justify-center overflow-hidden">
                 <img
                   src="/favicon.jpg"
-                  alt="صندوق فتوى"
+                  alt="صندوق الفتوى مسجد الإيمان"
                   className="w-full h-full object-cover"
                 />
               </div>
@@ -146,27 +146,18 @@ export function SplashScreen({ onComplete, duration = 2800 }: SplashScreenProps)
               className="text-center"
             >
               <motion.h1
-                animate={{
-                  textShadow: [
-                    '0 0 20px transparent',
-                    '0 0 30px hsl(var(--primary) / 0.3)',
-                    '0 0 20px transparent'
-                  ]
-                }}
-                transition={{
-                  duration: 3,
-                  repeat: Infinity,
-                  ease: 'easeInOut'
-                }}
-                className="text-5xl md:text-6xl font-bold text-foreground font-serif mb-4"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.5 }}
+                className="text-4xl font-bold text-primary mb-2"
               >
-                صندوق فتوى
+                صندوق الفتوى
               </motion.h1>
               <motion.p
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.8 }}
-                className="text-muted-foreground text-lg md:text-xl"
+                className="text-xl text-primary/80 font-medium"
               >
                 مسجد الإيمان – 150 مسكن
               </motion.p>
@@ -176,7 +167,7 @@ export function SplashScreen({ onComplete, duration = 2800 }: SplashScreenProps)
                 transition={{ delay: 1 }}
                 className="text-primary/60 text-sm mt-2 font-mono"
               >
-                v1.0.17
+                v1.0.25
               </motion.p>
             </motion.div>
           </motion.div>

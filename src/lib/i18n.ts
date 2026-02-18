@@ -8,7 +8,7 @@ const ar = {
     // Navigation
     nav: {
       title: 'صندوق الفتوى',
-      subtitle: 'مسجد الإيمان',
+      subtitle: 'مسجد الإيمان – 150 مسكن',
       askQuestion: 'اطرح سؤالك',
     },
     // Hero

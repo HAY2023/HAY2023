@@ -15,7 +15,7 @@ export function exportToExcel(questions: Question[], filename: string = 'questio
   const ws = XLSX.utils.json_to_sheet(data);
   const wb = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, ws, 'الأسئلة');
-  
+
   // Set RTL and column widths
   ws['!cols'] = [
     { wch: 5 },
@@ -36,11 +36,11 @@ export function exportToPDF(questions: Question[], filename: string = 'questions
 
   // Add Arabic font support
   doc.setFont('helvetica');
-  
+
   // Title
   doc.setFontSize(18);
-  doc.text('صندوق فتوى - الأسئلة المستلمة', doc.internal.pageSize.width / 2, 20, { align: 'center' });
-  
+  doc.text('صندوق الفتوى مسجد الإيمان - الأسئلة المستلمة', doc.internal.pageSize.width / 2, 20, { align: 'center' });
+
   // Date
   doc.setFontSize(10);
   doc.text(`تاريخ التصدير: ${new Date().toLocaleDateString('ar-SA')}`, doc.internal.pageSize.width / 2, 30, { align: 'center' });

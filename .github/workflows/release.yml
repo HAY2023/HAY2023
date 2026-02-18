@@ -59,14 +59,38 @@ jobs:
       - name: Install frontend dependencies
         run: npm install
 
+      - name: Decode PFX certificate (Windows only)
+        if: matrix.platform == 'windows-latest' && secrets.WINDOWS_PFX
+        shell: pwsh
+        run: |
+          $pfxBytes = [System.Convert]::FromBase64String('${{ secrets.WINDOWS_PFX }}')
+          [IO.File]::WriteAllBytes('certificate.pfx', $pfxBytes)
+
       - name: Build the app
         uses: tauri-apps/tauri-action@v0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          APPLE_CERTIFICATE: ${{ secrets.APPLE_CERTIFICATE }}
+          APPLE_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
+          APPLE_SIGNING_IDENTITY: ${{ secrets.APPLE_SIGNING_IDENTITY }}
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          APPLE_PASSWORD: ${{ secrets.APPLE_PASSWORD }}
         with:
           tagName: ${{ github.ref_name }}
-          releaseName: 'App v__VERSION__'
-          releaseBody: 'See the assets to download this version and install.'
+          releaseName: 'صندوق الفتوى v__VERSION__'
+          releaseBody: 'نسخة جديدة من تطبيق صندوق الفتوى مسجد الإيمان - 150 مسكن.'
           releaseDraft: false
           prerelease: false
           args: ${{ matrix.platform == 'ubuntu-22.04' && '--target android' || '' }}
+
+      - name: Sign Windows installers (if certificate provided)
+        if: matrix.platform == 'windows-latest' && secrets.WINDOWS_PFX && secrets.WINDOWS_PFX_PASSWORD
+        shell: pwsh
+        run: |
+          $pfxPass = '${{ secrets.WINDOWS_PFX_PASSWORD }}'
+          $signtool = 'C:\Program Files (x86)\Windows Kits\10\bin\x64\signtool.exe'
+          if (-Not (Test-Path $signtool)) { $signtool = 'signtool' }
+          $installers = Get-ChildItem -Path src-tauri/target/release/bundle -Recurse -Include *.exe,*.msi,*.msix | ForEach-Object { $_.FullName }
+          foreach ($file in $installers) {
+            & $signtool sign /f certificate.pfx /p $pfxPass /tr http://timestamp.digicert.com /td SHA256 /fd SHA256 "$file"
+          }

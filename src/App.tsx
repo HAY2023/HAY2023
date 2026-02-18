@@ -6,6 +6,8 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ThemeProvider } from "next-themes";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { useRealtimeNotifications } from "@/hooks/useRealtimeNotifications";
+import { useBrowserNotifications } from "@/hooks/useBrowserNotifications";
 import { SplashScreen } from "@/components/SplashScreen";
 import { ConnectionStatus } from "@/components/ui/ConnectionStatus";
 import Index from "./pages/Index";
@@ -19,13 +21,13 @@ const queryClient = new QueryClient();
 // Component to handle document direction based on language
 function DirectionHandler({ children }: { children: React.ReactNode }) {
   const { i18n } = useTranslation();
-  
+
   useEffect(() => {
     const dir = i18n.language === 'ar' ? 'rtl' : 'ltr';
     document.documentElement.dir = dir;
     document.documentElement.lang = i18n.language;
   }, [i18n.language]);
-  
+
   return <>{children}</>;
 }
 
@@ -57,9 +59,9 @@ const App = () => {
             {showSplash && isFirstVisit && (
               <SplashScreen onComplete={handleSplashComplete} duration={2500} />
             )}
-            
+
             <ConnectionStatus />
-            
+
             <Toaster />
             <Sonner />
             <BrowserRouter>

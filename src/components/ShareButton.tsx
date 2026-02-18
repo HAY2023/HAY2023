@@ -13,10 +13,10 @@ import { useTranslation } from 'react-i18next';
 const ShareButton = () => {
   const { t } = useTranslation();
   const [copied, setCopied] = useState(false);
-  
+
   const appUrl = window.location.origin;
-  const shareText = 'صندوق فتوى - أرسل سؤالك الشرعي واحصل على إجابة من العلماء';
-  const shareTitle = 'صندوق فتوى';
+  const shareText = 'صندوق الفتوى مسجد الإيمان - أرسل سؤالك الشرعي واحصل على إجابة من العلماء';
+  const shareTitle = 'صندوق الفتوى مسجد الإيمان';
 
   const handleNativeShare = async () => {
     if (navigator.share) {
