@@ -6,8 +6,6 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ThemeProvider } from "next-themes";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { useRealtimeNotifications } from "@/hooks/useRealtimeNotifications";
-import { useBrowserNotifications } from "@/hooks/useBrowserNotifications";
 import { SplashScreen } from "@/components/SplashScreen";
 import { ConnectionStatus } from "@/components/ui/ConnectionStatus";
 import Index from "./pages/Index";
