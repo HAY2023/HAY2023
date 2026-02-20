@@ -64,8 +64,14 @@ jobs:
         run: |
           if [ ! -d "src-tauri/gen/android" ]; then
             echo "Android project not found. Initializing..."
-            # Use npm run to ensure we use the project's tauri CLI
-            npm run tauri -- android init --package-name app.sandouq-fatwa || true
+            # Install tauri CLI globally to ensure we can run it, or use npx
+            echo "Running tauri android init..."
+            npx tauri android init --package-name app.sandouq-fatwa || { echo "Init failed!"; exit 1; }
+            
+            echo "Listing generated files:"
+            ls -R src-tauri/gen/android
+          else
+            echo "Android project already exists."
           fi
 
       - name: Build the app
