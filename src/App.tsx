@@ -57,7 +57,7 @@ const App = () => {
           <TooltipProvider>
             {/* Show splash screen only on first visit */}
             {showSplash && isFirstVisit && (
-              <SplashScreen onComplete={handleSplashComplete} duration={2500} />
+              <SplashScreen onComplete={handleSplashComplete} duration={1000} />
             )}
 
             <ConnectionStatus />
