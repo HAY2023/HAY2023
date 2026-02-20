@@ -165,9 +165,9 @@ export function SplashScreen({ onComplete, duration = 1500 }: SplashScreenProps)
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 1 }}
-                className="text-black/60 text-sm mt-2 font-mono"
+                className="text-black/60 text-sm mt-3 font-mono dir-ltr"
               >
-                v1.1.3
+                النسخة 1.1.4
               </motion.p>
             </motion.div>
           </motion.div>
