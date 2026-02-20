@@ -11,7 +11,10 @@
     "preview": "vite preview",
     "tauri": "tauri",
     "tauri:dev": "tauri dev",
-    "tauri:build": "tauri build"
+    "tauri:build": "tauri build",
+    "icons:generate": "node scripts/generate-icons.js",
+    "icons:verify": "node scripts/verify-icons.js",
+    "icons:setup": "npm run icons:generate && npm run icons:verify"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",
