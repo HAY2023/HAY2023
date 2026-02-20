@@ -62,14 +62,12 @@ jobs:
       - name: Initialize Android project (Ubuntu only)
         if: matrix.platform == 'ubuntu-22.04'
         run: |
+          echo "Checking for existing Android project..."
           if [ ! -d "src-tauri/gen/android" ]; then
             echo "Android project not found. Initializing..."
-            # Install tauri CLI globally to ensure we can run it, or use npx
-            echo "Running tauri android init..."
-            npx tauri android init --package-name app.sandouq-fatwa || { echo "Init failed!"; exit 1; }
-            
-            echo "Listing generated files:"
-            ls -R src-tauri/gen/android
+            # Use npm run tauri to ensure we use the project's installed CLI version
+            # The -- separator ensures arguments are passed to the tauri binary
+            npm run tauri -- android init || { echo "Init failed!"; exit 1; }
           else
             echo "Android project already exists."
           fi
@@ -84,4 +82,5 @@ jobs:
           releaseBody: 'See the assets to download this version and install.'
           releaseDraft: false
           prerelease: false
-          args: ${{ matrix.platform == 'ubuntu-22.04' && '--target android' || '' }}
+          # Use --debug for Android to avoid signing key requirements for now
+          args: ${{ matrix.platform == 'ubuntu-22.04' && '--target android --debug' || '' }}
