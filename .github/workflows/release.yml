@@ -39,8 +39,8 @@ jobs:
       - name: Install Android NDK (Ubuntu only)
         if: matrix.platform == 'ubuntu-22.04'
         run: |
-          sdkmanager "ndk;26.4.20230819"
-          echo "NDK_HOME=$ANDROID_HOME/ndk/26.4.20230819" >> $GITHUB_ENV
+          sdkmanager "ndk;25.2.9519653"
+          echo "NDK_HOME=$ANDROID_HOME/ndk/25.2.9519653" >> $GITHUB_ENV
 
       - name: Install system dependencies (Ubuntu only)
         if: matrix.platform == 'ubuntu-22.04'
