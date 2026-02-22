@@ -23,27 +23,8 @@ jobs:
         with:
           node-version: 20
 
-      - name: Setup Java 17 (Ubuntu only)
-        if: matrix.platform == 'ubuntu-22.04'
-        uses: actions/setup-java@v4
-        with:
-          distribution: 'zulu'
-          java-version: '17'
-
       - name: Install Rust
         uses: dtolnay/rust-toolchain@stable
-        with:
-          targets: ${{ matrix.platform == 'ubuntu-22.04' && 'aarch64-linux-android,armv7-linux-androideabi,i686-linux-android,x86_64-linux-android' || '' }}
-
-      - name: Install Android SDK (Ubuntu only)
-        if: matrix.platform == 'ubuntu-22.04'
-        uses: android-actions/setup-android@v3
-
-      - name: Install NDK (Ubuntu only)
-        if: matrix.platform == 'ubuntu-22.04'
-        run: |
-          sdkmanager "ndk;26.1.10909125"
-          echo "NDK_HOME=$ANDROID_HOME/ndk/26.1.10909125" >> $GITHUB_ENV
 
       - name: Install system dependencies (Ubuntu only)
         if: matrix.platform == 'ubuntu-22.04'
@@ -57,20 +38,7 @@ jobs:
           workspaces: './src-tauri -> target'
 
       - name: Install frontend dependencies
-        run: npm install
-
-      - name: Initialize Android project (Ubuntu only)
-        if: matrix.platform == 'ubuntu-22.04'
-        run: |
-          echo "Checking for existing Android project..."
-          if [ ! -d "src-tauri/gen/android" ]; then
-            echo "Android project not found. Initializing..."
-            # Use npm run tauri to ensure we use the project's installed CLI version
-            # The -- separator ensures arguments are passed to the tauri binary
-            npm run tauri -- android init || { echo "Init failed!"; exit 1; }
-          else
-            echo "Android project already exists."
-          fi
+        run: npm ci
 
       - name: Build the app
         uses: tauri-apps/tauri-action@v0
@@ -82,5 +50,4 @@ jobs:
           releaseBody: 'See the assets to download this version and install.'
           releaseDraft: false
           prerelease: false
-          # Use --debug for Android to avoid signing key requirements for now
-          args: ${{ matrix.platform == 'ubuntu-22.04' && '--target android --debug' || '' }}
+          args: ${{ matrix.platform == 'ubuntu-22.04' && '--bundles appimage,deb' || '' }}
