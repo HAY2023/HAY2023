@@ -110,9 +110,10 @@ jobs:
           path: src-tauri/gen/android/app/build/outputs/apk/**/*.apk
 
       - name: Attach APK to GitHub Release
-        uses: softprops/action-gh-release@v2
+        uses: ncipollo/release-action@v1
         with:
-          tag_name: ${{ github.ref_name }}
-          files: src-tauri/gen/android/app/build/outputs/apk/**/*.apk
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          tag: ${{ github.ref_name }}
+          artifacts: src-tauri/gen/android/app/build/outputs/apk/**/*.apk
+          allowUpdates: true
+          artifactErrorsFailBuild: true
+          token: ${{ secrets.GITHUB_TOKEN }}
