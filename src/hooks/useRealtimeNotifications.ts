@@ -7,6 +7,29 @@ export const useRealtimeNotifications = () => {
     const { toast } = useToast();
 
     useEffect(() => {
+        const initPermissions = async () => {
+            // Ask browser permission once so notifications work on phone/web too.
+            if ('Notification' in window && Notification.permission === 'default') {
+                try {
+                    await Notification.requestPermission();
+                } catch (e) {
+                    console.warn('Browser notification permission request failed', e);
+                }
+            }
+
+            // Prepare native (Tauri) notifications when available.
+            try {
+                const granted = await isPermissionGranted();
+                if (!granted) {
+                    await requestPermission();
+                }
+            } catch {
+                // Non-tauri environments will fall back to browser notifications.
+            }
+        };
+
+        initPermissions();
+
         const channel = supabase
             .channel('public-notifications')
             .on(

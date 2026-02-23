@@ -151,7 +151,7 @@ export function SplashScreen({ onComplete, duration = 1500 }: SplashScreenProps)
                 transition={{ delay: 0.5 }}
                 className="text-4xl font-bold text-black mb-2"
               >
-                صندوق الفتوى
+                صندوق الفتوى - مسجد الإيمان - 150 مسكن
               </motion.h1>
               <motion.p
                 initial={{ opacity: 0 }}
@@ -159,7 +159,7 @@ export function SplashScreen({ onComplete, duration = 1500 }: SplashScreenProps)
                 transition={{ delay: 0.8 }}
                 className="text-xl text-black/80 font-medium"
               >
-                مسجد الإيمان – 150 مسكن
+                غرداية - تجنينت
               </motion.p>
               <motion.p
                 initial={{ opacity: 0 }}
@@ -167,7 +167,7 @@ export function SplashScreen({ onComplete, duration = 1500 }: SplashScreenProps)
                 transition={{ delay: 1 }}
                 className="text-black/60 text-sm mt-2 font-mono"
               >
-                v1.1.3
+                v1.1.9
               </motion.p>
             </motion.div>
           </motion.div>

@@ -12,6 +12,22 @@ interface NotificationPayload {
   data?: Record<string, string>;
 }
 
+async function verifyAdminPassword(supabase: any, adminPassword?: string) {
+  if (!adminPassword) {
+    return { ok: false, status: 401, error: 'Admin password required' };
+  }
+
+  const { data: isValid, error: verifyError } = await supabase.rpc('verify_admin_password', {
+    input_password: adminPassword
+  });
+
+  if (verifyError || !isValid) {
+    return { ok: false, status: 403, error: 'Invalid admin password' };
+  }
+
+  return { ok: true, status: 200 };
+}
+
 serve(async (req) => {
   // Handle CORS preflight
   if (req.method === 'OPTIONS') {
@@ -58,22 +74,11 @@ serve(async (req) => {
 
     // Action: send notification (admin only - requires password verification)
     if (action === 'send') {
-      // Verify admin password
-      if (!admin_password) {
+      const verification = await verifyAdminPassword(supabase, admin_password);
+      if (!verification.ok) {
         return new Response(
-          JSON.stringify({ error: 'Admin password required' }),
-          { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
-      }
-
-      const { data: isValid, error: verifyError } = await supabase.rpc('verify_admin_password', {
-        input_password: admin_password
-      });
-
-      if (verifyError || !isValid) {
-        return new Response(
-          JSON.stringify({ error: 'Invalid admin password' }),
-          { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          JSON.stringify({ error: verification.error }),
+          { status: verification.status, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
 
@@ -161,6 +166,35 @@ serve(async (req) => {
       );
     }
 
+    // Action: list tokens (admin only)
+    if (action === 'list-tokens') {
+      const verification = await verifyAdminPassword(supabase, admin_password);
+      if (!verification.ok) {
+        return new Response(
+          JSON.stringify({ error: verification.error }),
+          { status: verification.status, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+
+      const { data, error } = await supabase
+        .from('push_tokens')
+        .select('id, token, device_type, is_admin, created_at, updated_at')
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        console.error('Error listing tokens:', error);
+        return new Response(
+          JSON.stringify({ error: 'Failed to load tokens' }),
+          { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+
+      return new Response(
+        JSON.stringify({ success: true, tokens: data || [] }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
     // Action: set admin status (requires admin password verification)
     if (action === 'set-admin') {
       if (!token) {
@@ -170,22 +204,11 @@ serve(async (req) => {
         );
       }
 
-      // Verify admin password
-      if (!admin_password) {
+      const verification = await verifyAdminPassword(supabase, admin_password);
+      if (!verification.ok) {
         return new Response(
-          JSON.stringify({ error: 'Admin password required' }),
-          { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
-      }
-
-      const { data: isValid, error: verifyError } = await supabase.rpc('verify_admin_password', {
-        input_password: admin_password
-      });
-
-      if (verifyError || !isValid) {
-        return new Response(
-          JSON.stringify({ error: 'Invalid admin password' }),
-          { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          JSON.stringify({ error: verification.error }),
+          { status: verification.status, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
 

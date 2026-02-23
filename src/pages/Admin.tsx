@@ -939,13 +939,15 @@ const AdminPage = () => {
   const loadPushTokens = async () => {
     if (!storedPassword) return;
     try {
-      const { data, error } = await supabase
-        .from('push_tokens')
-        .select('*')
-        .order('created_at', { ascending: false });
+      const { data, error } = await supabase.functions.invoke('send-notification', {
+        body: {
+          action: 'list-tokens',
+          admin_password: storedPassword
+        }
+      });
 
       if (error) throw error;
-      setPushTokensList(data || []);
+      setPushTokensList(data?.tokens || []);
     } catch (error) {
       console.error('Error loading push tokens:', error);
     }

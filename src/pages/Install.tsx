@@ -119,6 +119,7 @@ export default function Install() {
       installed: 'تم التثبيت ✓',
       goHome: 'فتح التطبيق',
       showMobileGuide: 'عرض دليل التثبيت للهاتف',
+      phoneNotificationHint: 'بعد التثبيت على الهاتف: افتح التطبيق مرة واحدة واسمح بالإشعارات ليصلك تنبيه جديد.',
     },
     fr: {
       title: "Installer l'app",
@@ -129,6 +130,7 @@ export default function Install() {
       installed: 'Installée ✓',
       goHome: "Ouvrir l'app",
       showMobileGuide: 'Guide d\'installation mobile',
+      phoneNotificationHint: 'Après installation mobile, ouvrez l’app une fois et autorisez les notifications.',
     },
     en: {
       title: 'Install App',
@@ -139,6 +141,7 @@ export default function Install() {
       installed: 'Installed ✓',
       goHome: 'Open App',
       showMobileGuide: 'Show Mobile Install Guide',
+      phoneNotificationHint: 'After installing on phone, open the app once and allow notifications.',
     },
   };
 
@@ -401,6 +404,11 @@ export default function Install() {
                 <p className="text-primary font-bold flex items-center justify-center gap-2">
                   <Smartphone className="w-5 h-5" />
                   {isRTL ? '📱 نسخة الهاتف (أندرويد وآيفون)' : '📱 Phone Version (Android & iOS)'}
+                </p>
+              </div>
+              <div className="mb-4 p-3 bg-muted/50 rounded-xl border border-border">
+                <p className="text-sm text-muted-foreground">
+                  {c.phoneNotificationHint}
                 </p>
               </div>
               <Button
