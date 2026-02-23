@@ -91,10 +91,11 @@ serve(async (req) => {
         );
       }
 
-      // Get all admin tokens
+      // Get admin tokens only
       const { data: tokens, error: tokensError } = await supabase
         .from('push_tokens')
-        .select('token, device_type');
+        .select('token, device_type')
+        .eq('is_admin', true);
 
       if (tokensError) {
         console.error('Error fetching tokens:', tokensError);
@@ -151,6 +152,83 @@ serve(async (req) => {
       } else {
         console.warn('FCM_SERVER_KEY not set or no tokens found. Skipping actual FCM send.');
         // If testing without key, we treat it as "queued"
+      }
+
+      return new Response(
+        JSON.stringify({
+          success: true,
+          message: fcmServerKey
+            ? `Sent to ${successCount} devices, failed ${failureCount}`
+            : `Notification queued (Hypothetically) for ${tokens?.length || 0} devices. Set FCM_SERVER_KEY to really send.`,
+          tokens_count: tokens?.length || 0,
+          sent_count: successCount
+        }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Action: notify new question (no admin password required)
+    if (action === 'notify-new-question') {
+      const notificationPayload = notification as NotificationPayload | undefined;
+
+      const title = notificationPayload?.title || 'سؤال جديد';
+      const body = notificationPayload?.body || 'تم استلام سؤال جديد';
+
+      // Get admin tokens only
+      const { data: tokens, error: tokensError } = await supabase
+        .from('push_tokens')
+        .select('token, device_type')
+        .eq('is_admin', true);
+
+      if (tokensError) {
+        console.error('Error fetching tokens:', tokensError);
+        return new Response(
+          JSON.stringify({ error: 'Failed to fetch tokens' }),
+          { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+
+      console.log(`Sending new question notification to ${tokens?.length || 0} devices`);
+
+      const fcmServerKey = Deno.env.get('FCM_SERVER_KEY');
+
+      let successCount = 0;
+      let failureCount = 0;
+
+      if (fcmServerKey && tokens && tokens.length > 0) {
+        const results = await Promise.all(tokens.map(async (t) => {
+          try {
+            const res = await fetch('https://fcm.googleapis.com/fcm/send', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `key=${fcmServerKey}`
+              },
+              body: JSON.stringify({
+                to: t.token,
+                notification: {
+                  title,
+                  body,
+                  sound: 'default'
+                },
+                data: notificationPayload?.data || {}
+              })
+            });
+
+            if (res.ok) return true;
+            const text = await res.text();
+            console.error(`FCM Error for token ${t.token.slice(0, 10)}...:`, text);
+            return false;
+          } catch (e) {
+            console.error(`Fetch Error for token ${t.token.slice(0, 10)}...:`, e);
+            return false;
+          }
+        }));
+
+        successCount = results.filter(r => r).length;
+        failureCount = results.filter(r => !r).length;
+      } else {
+        console.warn('FCM_SERVER_KEY not set or no tokens found. Skipping actual FCM send.');
       }
 
       return new Response(

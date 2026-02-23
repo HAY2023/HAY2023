@@ -79,7 +79,6 @@ const AdminPage = () => {
   const [questionsCount, setQuestionsCount] = useState<number | null>(null);
   const [questions, setQuestions] = useState<Question[]>([]);
   const [accessLogs, setAccessLogs] = useState<AccessLog[]>([]);
-  const [soundEnabled, setSoundEnabled] = useState(true);
   const [selectedQuestions, setSelectedQuestions] = useState<string[]>([]);
   const [expandedLogId, setExpandedLogId] = useState<string | null>(null);
 
@@ -2266,7 +2265,7 @@ const AdminPage = () => {
             <div className="bg-card border border-border rounded-lg p-4 space-y-4">
               <h4 className="font-medium flex items-center gap-2">
                 <Send className="w-5 h-5 text-primary" />
-                إرسال إشعار للمستخدمين
+                إرسال إشعار للمسؤولين
               </h4>
               <Input
                 value={notifTitle}
@@ -2285,7 +2284,7 @@ const AdminPage = () => {
                 className="w-full"
               >
                 <Send className="w-4 h-4 ml-2" />
-                {sendingNotification ? 'جارٍ الإرسال...' : 'إرسال للجميع'}
+                {sendingNotification ? 'جارٍ الإرسال...' : 'إرسال للمسؤولين'}
               </Button>
             </div>
 
@@ -2606,71 +2605,6 @@ const AdminPage = () => {
               </Button>
             </div>
 
-            {/* قسم الإشعارات */}
-            <div className="bg-card border border-border rounded-lg p-4 space-y-4">
-              <div className="flex items-center gap-2">
-                <BellRing className="w-5 h-5 text-primary" />
-                <h3 className="font-medium">إشعارات الأسئلة الجديدة</h3>
-              </div>
-              <p className="text-sm text-muted-foreground">
-                تلقي إشعارات في المتصفح عند وصول أسئلة جديدة أثناء تواجدك في لوحة التحكم
-              </p>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
-                  <div>
-                    <p className="font-medium text-sm">إشعارات الصوت</p>
-                    <p className="text-xs text-muted-foreground">تشغيل صوت عند وصول سؤال جديد</p>
-                  </div>
-                  <Switch
-                    checked={soundEnabled}
-                    onCheckedChange={setSoundEnabled}
-                  />
-                </div>
-
-                <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
-                  <div>
-                    <p className="font-medium text-sm">اختبار الإشعارات</p>
-                    <p className="text-xs text-muted-foreground">تأكد من عمل الأيقونة والتنبيه</p>
-                  </div>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={handleTestNotification}
-                  >
-                    <Send className="w-4 h-4 ml-2" />
-                    اختبار
-                  </Button>
-                </div>
-              </div>
-
-              <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
-                <div>
-                  <p className="font-medium text-sm">إشعارات المتصفح</p>
-                  <p className="text-xs text-muted-foreground">طلب إذن المتصفح وإرسال تنبيه تفعيل</p>
-                </div>
-                <Button
-                  size="sm"
-                  variant="default"
-                  onClick={() => {
-                    if ('Notification' in window) {
-                      Notification.requestPermission().then(permission => {
-                        if (permission === 'granted') {
-                          new Notification('تم تفعيل الإشعارات!', {
-                            body: 'ستصلك إشعارات عند وصول أسئلة جديدة',
-                            icon: '/icon-mosque.png'
-                          });
-                          toast({ title: '✓ تم التفعيل', description: 'تم تفعيل إشعارات المتصفح بنجاح' });
-                        }
-                      });
-                    }
-                  }}
-                >
-                  <Bell className="w-4 h-4 ml-2" />
-                  تفعيل الآن
-                </Button>
-              </div>
-            </div>
           </TabsContent>
         </Tabs>
       </main>
