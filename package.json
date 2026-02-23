@@ -1,7 +1,7 @@
-{
+﻿{
   "name": "sandouq-fatwa",
-  "version": "1.1.9",
-  "description": "صندوق الفتوى مسجد الإيمان - 150 مسكن",
+  "version": "1.1.11",
+  "description": "طµظ†ط¯ظˆظ‚ ط§ظ„ظپطھظˆظ‰ ظ…ط³ط¬ط¯ ط§ظ„ط¥ظٹظ…ط§ظ† - 150 ظ…ط³ظƒظ†",
   "type": "module",
   "scripts": {
     "dev": "vite",
