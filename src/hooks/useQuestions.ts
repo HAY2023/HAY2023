@@ -11,22 +11,19 @@ export interface Question {
 export function useSubmitQuestion() {
   return useMutation({
     mutationFn: async ({ category, question_text }: { category: string; question_text: string }) => {
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from('questions')
-        .insert({ category, question_text });
-      
+        .insert({ category, question_text })
+        .select('id')
+        .single();
+
       if (error) throw error;
 
       try {
-        const preview = question_text.trim();
-        const snippet = preview.length > 80 ? `${preview.slice(0, 80)}...` : preview;
         await supabase.functions.invoke('send-notification', {
           body: {
             action: 'notify-new-question',
-            notification: {
-              title: 'سؤال جديد',
-              body: `فئة: ${category}\n${snippet}`,
-            }
+            question_id: data?.id,
           }
         });
       } catch (notifyError) {

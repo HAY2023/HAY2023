@@ -13,7 +13,7 @@ const DB_NAME = 'fatwa-offline-db';
 const STORE_NAME = 'pending-questions';
 const DB_VERSION = 1;
 
-// فتح قاعدة البيانات
+// ظپطھط­ ظ‚ط§ط¹ط¯ط© ط§ظ„ط¨ظٹط§ظ†ط§طھ
 const openDB = (): Promise<IDBDatabase> => {
   return new Promise((resolve, reject) => {
     const request = indexedDB.open(DB_NAME, DB_VERSION);
@@ -30,7 +30,7 @@ const openDB = (): Promise<IDBDatabase> => {
   });
 };
 
-// حفظ سؤال
+// ط­ظپط¸ ط³ط¤ط§ظ„
 const saveQuestionToDB = async (question: OfflineQuestion): Promise<void> => {
   const db = await openDB();
   return new Promise((resolve, reject) => {
@@ -43,7 +43,7 @@ const saveQuestionToDB = async (question: OfflineQuestion): Promise<void> => {
   });
 };
 
-// جلب جميع الأسئلة المحفوظة
+// ط¬ظ„ط¨ ط¬ظ…ظٹط¹ ط§ظ„ط£ط³ط¦ظ„ط© ط§ظ„ظ…ط­ظپظˆط¸ط©
 const getAllQuestions = async (): Promise<OfflineQuestion[]> => {
   const db = await openDB();
   return new Promise((resolve, reject) => {
@@ -56,7 +56,7 @@ const getAllQuestions = async (): Promise<OfflineQuestion[]> => {
   });
 };
 
-// تحديث سؤال
+// طھط­ط¯ظٹط« ط³ط¤ط§ظ„
 const updateQuestionInDB = async (id: string, data: Partial<OfflineQuestion>): Promise<void> => {
   const db = await openDB();
   return new Promise((resolve, reject) => {
@@ -79,7 +79,7 @@ const updateQuestionInDB = async (id: string, data: Partial<OfflineQuestion>): P
   });
 };
 
-// حذف سؤال
+// ط­ط°ظپ ط³ط¤ط§ظ„
 const deleteQuestionFromDB = async (id: string): Promise<void> => {
   const db = await openDB();
   return new Promise((resolve, reject) => {
@@ -92,7 +92,7 @@ const deleteQuestionFromDB = async (id: string): Promise<void> => {
   });
 };
 
-// حذف جميع الأسئلة
+// ط­ط°ظپ ط¬ظ…ظٹط¹ ط§ظ„ط£ط³ط¦ظ„ط©
 const deleteAllQuestionsFromDB = async (): Promise<void> => {
   const db = await openDB();
   return new Promise((resolve, reject) => {
@@ -112,7 +112,7 @@ export function useOfflineQuestions() {
   const [offlineQuestions, setOfflineQuestions] = useState<OfflineQuestion[]>([]);
   const { toast } = useToast();
 
-  // تحديث عدد الأسئلة المعلقة وقائمتها
+  // طھط­ط¯ظٹط« ط¹ط¯ط¯ ط§ظ„ط£ط³ط¦ظ„ط© ط§ظ„ظ…ط¹ظ„ظ‚ط© ظˆظ‚ط§ط¦ظ…طھظ‡ط§
   const updatePendingCount = useCallback(async () => {
     try {
       const questions = await getAllQuestions();
@@ -123,7 +123,7 @@ export function useOfflineQuestions() {
     }
   }, []);
 
-  // جلب الأسئلة المحفوظة
+  // ط¬ظ„ط¨ ط§ظ„ط£ط³ط¦ظ„ط© ط§ظ„ظ…ط­ظپظˆط¸ط©
   const getOfflineQuestions = useCallback(async (): Promise<OfflineQuestion[]> => {
     try {
       const questions = await getAllQuestions();
@@ -135,49 +135,49 @@ export function useOfflineQuestions() {
     }
   }, []);
 
-  // تحديث سؤال محفوظ
+  // طھط­ط¯ظٹط« ط³ط¤ط§ظ„ ظ…ط­ظپظˆط¸
   const updateQuestion = useCallback(async (id: string, data: Partial<OfflineQuestion>) => {
     try {
       await updateQuestionInDB(id, data);
       await updatePendingCount();
       toast({
-        title: '✓',
-        description: 'تم تحديث السؤال',
+        title: 'âœ“',
+        description: 'طھظ… طھط­ط¯ظٹط« ط§ظ„ط³ط¤ط§ظ„',
       });
     } catch (error) {
       console.error('Error updating question:', error);
     }
   }, [toast, updatePendingCount]);
 
-  // حذف سؤال محفوظ
+  // ط­ط°ظپ ط³ط¤ط§ظ„ ظ…ط­ظپظˆط¸
   const deleteQuestion = useCallback(async (id: string) => {
     try {
       await deleteQuestionFromDB(id);
       await updatePendingCount();
       toast({
-        title: '🗑️',
-        description: 'تم حذف السؤال',
+        title: 'ًں—‘ï¸ڈ',
+        description: 'طھظ… ط­ط°ظپ ط§ظ„ط³ط¤ط§ظ„',
       });
     } catch (error) {
       console.error('Error deleting question:', error);
     }
   }, [toast, updatePendingCount]);
 
-  // حذف جميع الأسئلة المحفوظة
+  // ط­ط°ظپ ط¬ظ…ظٹط¹ ط§ظ„ط£ط³ط¦ظ„ط© ط§ظ„ظ…ط­ظپظˆط¸ط©
   const clearAllQuestions = useCallback(async () => {
     try {
       await deleteAllQuestionsFromDB();
       await updatePendingCount();
       toast({
-        title: '🗑️ تم المسح',
-        description: 'تم حذف جميع الأسئلة المحفوظة محلياً',
+        title: 'ًں—‘ï¸ڈ طھظ… ط§ظ„ظ…ط³ط­',
+        description: 'طھظ… ط­ط°ظپ ط¬ظ…ظٹط¹ ط§ظ„ط£ط³ط¦ظ„ط© ط§ظ„ظ…ط­ظپظˆط¸ط© ظ…ط­ظ„ظٹط§ظ‹',
       });
     } catch (error) {
       console.error('Error clearing all questions:', error);
     }
   }, [toast, updatePendingCount]);
 
-  // مزامنة الأسئلة المعلقة
+  // ظ…ط²ط§ظ…ظ†ط© ط§ظ„ط£ط³ط¦ظ„ط© ط§ظ„ظ…ط¹ظ„ظ‚ط©
   const syncPendingQuestions = useCallback(async () => {
     if (!navigator.onLine || isSyncing) return;
 
@@ -205,15 +205,10 @@ export function useOfflineQuestions() {
             await deleteQuestionFromDB(q.id);
             successCount++;
             try {
-              const preview = q.question_text.trim();
-              const snippet = preview.length > 80 ? `${preview.slice(0, 80)}...` : preview;
               await supabase.functions.invoke('send-notification', {
                 body: {
                   action: 'notify-new-question',
-                  notification: {
-                    title: 'سؤال جديد',
-                    body: `فئة: ${q.category}\n${snippet}`,
-                  }
+                  question_id: q.id,
                 }
               });
             } catch (notifyError) {
@@ -227,8 +222,8 @@ export function useOfflineQuestions() {
 
       if (successCount > 0) {
         toast({
-          title: '✅ تمت المزامنة',
-          description: `تم إرسال ${successCount} سؤال محفوظ`,
+          title: 'âœ… طھظ…طھ ط§ظ„ظ…ط²ط§ظ…ظ†ط©',
+          description: `طھظ… ط¥ط±ط³ط§ظ„ ${successCount} ط³ط¤ط§ظ„ ظ…ط­ظپظˆط¸`,
         });
       }
 
@@ -239,7 +234,7 @@ export function useOfflineQuestions() {
     setIsSyncing(false);
   }, [isSyncing, toast, updatePendingCount]);
 
-  // حفظ سؤال للإرسال لاحقاً
+  // ط­ظپط¸ ط³ط¤ط§ظ„ ظ„ظ„ط¥ط±ط³ط§ظ„ ظ„ط§ط­ظ‚ط§ظ‹
   const saveForLater = useCallback(async (category: string, question_text: string) => {
     const question: OfflineQuestion = {
       id: `offline-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
@@ -252,18 +247,18 @@ export function useOfflineQuestions() {
     await updatePendingCount();
 
     toast({
-      title: '💾 تم الحفظ',
-      description: 'سيُرسل السؤال تلقائياً عند الاتصال بالإنترنت',
+      title: 'ًں’¾ طھظ… ط§ظ„ط­ظپط¸',
+      description: 'ط³ظٹظڈط±ط³ظ„ ط§ظ„ط³ط¤ط§ظ„ طھظ„ظ‚ط§ط¦ظٹط§ظ‹ ط¹ظ†ط¯ ط§ظ„ط§طھطµط§ظ„ ط¨ط§ظ„ط¥ظ†طھط±ظ†طھ',
     });
   }, [toast, updatePendingCount]);
 
-  // مراقبة حالة الاتصال
+  // ظ…ط±ط§ظ‚ط¨ط© ط­ط§ظ„ط© ط§ظ„ط§طھطµط§ظ„
   useEffect(() => {
     const handleOnline = () => {
       setIsOnline(true);
       toast({
-        title: '🌐 متصل بالإنترنت',
-        description: 'جارٍ مزامنة الأسئلة المحفوظة...',
+        title: 'ًںŒگ ظ…طھطµظ„ ط¨ط§ظ„ط¥ظ†طھط±ظ†طھ',
+        description: 'ط¬ط§ط±ظچ ظ…ط²ط§ظ…ظ†ط© ط§ظ„ط£ط³ط¦ظ„ط© ط§ظ„ظ…ط­ظپظˆط¸ط©...',
       });
       syncPendingQuestions();
     };
@@ -271,8 +266,8 @@ export function useOfflineQuestions() {
     const handleOffline = () => {
       setIsOnline(false);
       toast({
-        title: '📴 غير متصل',
-        description: 'سيتم حفظ أسئلتك وإرسالها عند الاتصال',
+        title: 'ًں“´ ط؛ظٹط± ظ…طھطµظ„',
+        description: 'ط³ظٹطھظ… ط­ظپط¸ ط£ط³ط¦ظ„طھظƒ ظˆط¥ط±ط³ط§ظ„ظ‡ط§ ط¹ظ†ط¯ ط§ظ„ط§طھطµط§ظ„',
         variant: 'destructive',
       });
     };
@@ -280,10 +275,10 @@ export function useOfflineQuestions() {
     window.addEventListener('online', handleOnline);
     window.addEventListener('offline', handleOffline);
 
-    // تحديث العدد عند التحميل
+    // طھط­ط¯ظٹط« ط§ظ„ط¹ط¯ط¯ ط¹ظ†ط¯ ط§ظ„طھط­ظ…ظٹظ„
     updatePendingCount();
 
-    // محاولة المزامنة عند التحميل
+    // ظ…ط­ط§ظˆظ„ط© ط§ظ„ظ…ط²ط§ظ…ظ†ط© ط¹ظ†ط¯ ط§ظ„طھط­ظ…ظٹظ„
     if (navigator.onLine) {
       syncPendingQuestions();
     }
