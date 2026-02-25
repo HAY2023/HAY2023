@@ -5,7 +5,7 @@ const config: CapacitorConfig = {
   appName: 'صندوق الفتوى',
   webDir: 'dist',
   server: {
-    url: 'https://fe194506-7cd9-4de8-aafe-e158e44b1ea7.lovableproject.com',
+    // التطبيق يحمّل من الملفات المحلية (dist) بدلاً من خادم بعيد
     cleartext: true
   },
   plugins: {
