@@ -453,12 +453,6 @@ const AdminPage = () => {
 
   // طلب إذن الإشعارات عند تسجيل الدخول
   useEffect(() => {
-    if (isAuthenticated && 'Notification' in window && Notification.permission === 'default') {
-      Notification.requestPermission();
-    }
-  }, [isAuthenticated]);
-
-  useEffect(() => {
     if (!isAuthenticated) return;
 
     const channel = supabase
@@ -491,18 +485,9 @@ const AdminPage = () => {
                 body,
                 icon: 'icon-mosque',
               });
-            } else {
-              // Fallback to browser if native permission denied
-              if ('Notification' in window && Notification.permission === 'granted') {
-                new Notification(title, { body, icon: '/icon-mosque.png', tag: 'new-question' });
-              }
             }
           } catch (e) {
             console.warn('Native notification failed in realtime listener:', e);
-            // Fallback to Browser Notification API
-            if ('Notification' in window && Notification.permission === 'granted') {
-              new Notification(title, { body, icon: '/icon-mosque.png', tag: 'new-question' });
-            }
           }
 
           toast({ title: '📩 سؤال جديد', description: 'تم استلام سؤال جديد' });
@@ -534,19 +519,7 @@ const AdminPage = () => {
         });
         toast({ title: '✓ تم الإرسال', description: 'تم إرسال إشعار تجريبي أصلي للنظام' });
       } else {
-        // Fallback to browser notification if native fails or denied
-        if ('Notification' in window) {
-          const browserPerm = await Notification.requestPermission();
-          if (browserPerm === 'granted') {
-            new Notification('🔔 إشعار تجريبي', {
-              body: 'إشعار تجريبي عبر المتصفح (الصلاحية الأصلية مرفوضة)',
-              icon: '/icon-mosque.png'
-            });
-            toast({ title: '✓ تم الإرسال', description: 'تم الإرسال عبر المتصفح' });
-          } else {
-            toast({ title: '⚠️ تنبيه', description: 'يرجى تفعيل الإشعارات في النظام أولاً', variant: 'destructive' });
-          }
-        }
+        toast({ title: '⚠️ تنبيه', description: 'يرجى تفعيل الإشعارات في النظام أولاً', variant: 'destructive' });
       }
     } catch (error) {
       console.error('Error sending test notification:', error);
@@ -2642,32 +2615,6 @@ const AdminPage = () => {
                 </div>
               </div>
 
-              <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
-                <div>
-                  <p className="font-medium text-sm">إشعارات المتصفح</p>
-                  <p className="text-xs text-muted-foreground">طلب إذن المتصفح وإرسال تنبيه تفعيل</p>
-                </div>
-                <Button
-                  size="sm"
-                  variant="default"
-                  onClick={() => {
-                    if ('Notification' in window) {
-                      Notification.requestPermission().then(permission => {
-                        if (permission === 'granted') {
-                          new Notification('تم تفعيل الإشعارات!', {
-                            body: 'ستصلك إشعارات عند وصول أسئلة جديدة',
-                            icon: '/icon-mosque.png'
-                          });
-                          toast({ title: '✓ تم التفعيل', description: 'تم تفعيل إشعارات المتصفح بنجاح' });
-                        }
-                      });
-                    }
-                  }}
-                >
-                  <Bell className="w-4 h-4 ml-2" />
-                  تفعيل الآن
-                </Button>
-              </div>
             </div>
           </TabsContent>
         </Tabs>

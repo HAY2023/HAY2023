@@ -25,9 +25,7 @@ const Index = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { data: settings, isLoading } = useSettings();
   const formSectionRef = useRef<HTMLDivElement>(null);
-
-  // تفعيل إشعارات المتصفح
-
+  
   const isRTL = i18n.language === 'ar';
 
   // Handle scroll for sticky nav
