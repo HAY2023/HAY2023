@@ -1,4 +1,4 @@
-﻿import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useSettings, useVerifyAdminPassword, useUpdateSettingsAuthenticated, useDeleteAllQuestionsAuthenticated, useDeleteSelectedQuestionsAuthenticated } from '@/hooks/useSettings';
 import { useGetQuestionsAuthenticated, useGetAccessLogsAuthenticated, Question, AccessLog } from '@/hooks/useQuestionsList';
@@ -26,8 +26,8 @@ import { SortableVideoItem } from '@/components/SortableVideoItem';
 import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 import {
   Lock, MessageSquare, Calendar, Video,
-  FileSpreadsheet, FileText, Bell, Trash2, Settings, List, Home, AlertTriangle, CheckSquare, Plus, Megaphone, Zap, Hash,
-  Shield, MapPin, Monitor, Globe, CheckCircle, XCircle, Clock, Wifi, Smartphone, Fingerprint, ChevronDown, ChevronUp, Search, Filter, BarChart3, Send, Bug, AlertCircle, RefreshCw, Timer, Sparkles
+  FileSpreadsheet, FileText, Bell, BellOff, Trash2, Settings, List, Home, AlertTriangle, CheckSquare, Plus, Megaphone, Zap, Hash,
+  Shield, MapPin, Monitor, Globe, CheckCircle, XCircle, Clock, Wifi, Smartphone, Fingerprint, ChevronDown, ChevronUp, Search, Filter, BarChart3, BellRing, Send, Bug, AlertCircle, RefreshCw, Timer, Sparkles
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
@@ -79,15 +79,16 @@ const AdminPage = () => {
   const [questionsCount, setQuestionsCount] = useState<number | null>(null);
   const [questions, setQuestions] = useState<Question[]>([]);
   const [accessLogs, setAccessLogs] = useState<AccessLog[]>([]);
+  const [soundEnabled, setSoundEnabled] = useState(true);
   const [selectedQuestions, setSelectedQuestions] = useState<string[]>([]);
   const [expandedLogId, setExpandedLogId] = useState<string | null>(null);
 
-  // ظپظ„ط§طھط± ط§ظ„ط³ط¬ظ„
+  // فلاتر السجل
   const [logSearchIP, setLogSearchIP] = useState('');
   const [logFilterStatus, setLogFilterStatus] = useState<'all' | 'authorized' | 'failed'>('all');
   const [logFilterDate, setLogFilterDate] = useState('');
 
-  // ظپظ„طھط± ط§ظ„ط£ط³ط¦ظ„ط©
+  // فلتر الأسئلة
   const [questionFilter, setQuestionFilter] = useState<'all' | 'new' | 'old'>('all');
   const [questionCategoryFilter, setQuestionCategoryFilter] = useState<string>('all');
 
@@ -194,7 +195,7 @@ const AdminPage = () => {
     })
   );
 
-  // ط¥ط­طµط§ط¦ظٹط§طھ ط§ظ„ط£ط³ط¦ظ„ط©
+  // إحصائيات الأسئلة
   const questionStats = useMemo(() => {
     const categoryCount: Record<string, number> = {};
     questions.forEach(q => {
@@ -204,7 +205,7 @@ const AdminPage = () => {
 
     const categoryData = Object.entries(categoryCount).map(([name, value]) => ({ name, value }));
 
-    // ط¥ط­طµط§ط¦ظٹط§طھ ط­ط³ط¨ ط§ظ„طھط§ط±ظٹط® (ط¢ط®ط± 7 ط£ظٹط§ظ…)
+    // إحصائيات حسب التاريخ (آخر 7 أيام)
     const last7Days: Record<string, number> = {};
     const today = new Date();
     for (let i = 6; i >= 0; i--) {
@@ -230,7 +231,7 @@ const AdminPage = () => {
     return { categoryData, dailyData };
   }, [questions]);
 
-  // ط¥ط­طµط§ط¦ظٹط§طھ ط§ظ„ط²ظˆط§ط± ط­ط³ط¨ ط§ظ„ظٹظˆظ…
+  // إحصائيات الزوار حسب اليوم
   const visitorStats = useMemo(() => {
     const last7Days: Record<string, number> = {};
     const today = new Date();
@@ -255,45 +256,45 @@ const AdminPage = () => {
     return Object.entries(last7Days).map(([name, count]) => ({ name, count }));
   }, [accessLogs]);
 
-  // ظپظ„طھط±ط© ط§ظ„ط£ط³ط¦ظ„ط© ط­ط³ط¨ ط§ظ„طھطµظ†ظٹظپ ظˆط§ظ„طھط§ط±ظٹط® (ظ‚ط¯ظٹظ… ط£ظˆظ„ط§ظ‹ ط«ظ… ط¬ط¯ظٹط¯)
+  // فلترة الأسئلة حسب التصنيف والتاريخ (قديم أولاً ثم جديد)
   const filteredQuestions = useMemo(() => {
     let filtered = [...questions];
 
-    // ظپظ„طھط± ط­ط³ط¨ ط§ظ„ظˆظ‚طھ (ظ‚ط¯ظٹظ…/ط¬ط¯ظٹط¯)
+    // فلتر حسب الوقت (قديم/جديد)
     if (questionFilter === 'new') {
-      // ط§ظ„ط£ط³ط¦ظ„ط© ظپظٹ ط¢ط®ط± 24 ط³ط§ط¹ط©
+      // الأسئلة في آخر 24 ساعة
       const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
       filtered = filtered.filter(q => new Date(q.created_at) > oneDayAgo);
     } else if (questionFilter === 'old') {
-      // ط§ظ„ط£ط³ط¦ظ„ط© ط£ظ‚ط¯ظ… ظ…ظ† 24 ط³ط§ط¹ط©
+      // الأسئلة أقدم من 24 ساعة
       const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
       filtered = filtered.filter(q => new Date(q.created_at) <= oneDayAgo);
     }
 
-    // ظپظ„طھط± ط­ط³ط¨ ظ†ظˆط¹ ط§ظ„ظپطھظˆظ‰
+    // فلتر حسب نوع الفتوى
     if (questionCategoryFilter !== 'all') {
       filtered = filtered.filter(q => q.category === questionCategoryFilter);
     }
 
-    // طھط±طھظٹط¨ ظ‚ط¯ظٹظ… ط£ظˆظ„ط§ظ‹ ط«ظ… ط¬ط¯ظٹط¯
+    // ترتيب قديم أولاً ثم جديد
     filtered.sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
 
     return filtered;
   }, [questions, questionFilter, questionCategoryFilter]);
 
-  // ظپظ„طھط±ط© ط§ظ„ط³ط¬ظ„ط§طھ
+  // فلترة السجلات
   const filteredLogs = useMemo(() => {
     return accessLogs.filter(log => {
-      // ظپظ„طھط± ط§ظ„ط¨ط­ط« ط¨ظ€ IP
+      // فلتر البحث بـ IP
       if (logSearchIP && !log.ip_address?.toLowerCase().includes(logSearchIP.toLowerCase())) {
         return false;
       }
 
-      // ظپظ„طھط± ط§ظ„ط­ط§ظ„ط©
+      // فلتر الحالة
       if (logFilterStatus === 'authorized' && !log.is_authorized) return false;
       if (logFilterStatus === 'failed' && log.is_authorized) return false;
 
-      // ظپظ„طھط± ط§ظ„طھط§ط±ظٹط®
+      // فلتر التاريخ
       if (logFilterDate) {
         const logDate = new Date(log.accessed_at).toISOString().split('T')[0];
         if (logDate !== logFilterDate) return false;
@@ -304,6 +305,27 @@ const AdminPage = () => {
   }, [accessLogs, logSearchIP, logFilterStatus, logFilterDate]);
 
   const CHART_COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#06b6d4', '#84cc16'];
+
+  const playNotificationSound = () => {
+    try {
+      const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+      const oscillator = audioContext.createOscillator();
+      const gainNode = audioContext.createGain();
+
+      oscillator.connect(gainNode);
+      gainNode.connect(audioContext.destination);
+
+      oscillator.frequency.value = 800;
+      oscillator.type = 'sine';
+      gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+      gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
+
+      oscillator.start(audioContext.currentTime);
+      oscillator.stop(audioContext.currentTime + 0.3);
+    } catch {
+      // Sound not supported
+    }
+  };
 
   const formatDateForInput = (isoDate: string | null): string => {
     if (!isoDate) return '';
@@ -394,11 +416,11 @@ const AdminPage = () => {
         setUserReports(prev => prev.map(r =>
           r.id === reportId ? { ...r, status: newStatus } : r
         ));
-        toast({ title: 'طھظ… ط§ظ„طھط­ط¯ظٹط«', description: `طھظ… طھط­ط¯ظٹط« ط­ط§ظ„ط© ط§ظ„ط¨ظ„ط§ط؛ ط¥ظ„ظ‰ "${newStatus === 'reviewed' ? 'طھظ…طھ ط§ظ„ظ…ط±ط§ط¬ط¹ط©' : newStatus === 'resolved' ? 'طھظ… ط§ظ„ط­ظ„' : 'ظ…ط¹ظ„ظ‚'}"` });
+        toast({ title: 'تم التحديث', description: `تم تحديث حالة البلاغ إلى "${newStatus === 'reviewed' ? 'تمت المراجعة' : newStatus === 'resolved' ? 'تم الحل' : 'معلق'}"` });
       }
     } catch (error) {
       console.error('Failed to update report status:', error);
-      toast({ title: 'ط®ط·ط£', description: 'ظپط´ظ„ طھط­ط¯ظٹط« ط­ط§ظ„ط© ط§ظ„ط¨ظ„ط§ط؛', variant: 'destructive' });
+      toast({ title: 'خطأ', description: 'فشل تحديث حالة البلاغ', variant: 'destructive' });
     }
   };
 
@@ -411,11 +433,11 @@ const AdminPage = () => {
       });
       if (!error && data) {
         setUserReports(prev => prev.filter(r => r.id !== reportId));
-        toast({ title: 'طھظ… ط§ظ„ط­ط°ظپ', description: 'طھظ… ط­ط°ظپ ط§ظ„ط¨ظ„ط§ط؛ ط¨ظ†ط¬ط§ط­' });
+        toast({ title: 'تم الحذف', description: 'تم حذف البلاغ بنجاح' });
       }
     } catch (error) {
       console.error('Failed to delete report:', error);
-      toast({ title: 'ط®ط·ط£', description: 'ظپط´ظ„ ط­ط°ظپ ط§ظ„ط¨ظ„ط§ط؛', variant: 'destructive' });
+      toast({ title: 'خطأ', description: 'فشل حذف البلاغ', variant: 'destructive' });
     }
   };
 
@@ -429,7 +451,13 @@ const AdminPage = () => {
     }
   };
 
-  // ط·ظ„ط¨ ط¥ط°ظ† ط§ظ„ط¥ط´ط¹ط§ط±ط§طھ ط¹ظ†ط¯ طھط³ط¬ظٹظ„ ط§ظ„ط¯ط®ظˆظ„
+  // طلب إذن الإشعارات عند تسجيل الدخول
+  useEffect(() => {
+    if (isAuthenticated && 'Notification' in window && Notification.permission === 'default') {
+      Notification.requestPermission();
+    }
+  }, [isAuthenticated]);
+
   useEffect(() => {
     if (!isAuthenticated) return;
 
@@ -438,9 +466,46 @@ const AdminPage = () => {
       .on(
         'postgres_changes',
         { event: 'INSERT', schema: 'public', table: 'questions' },
-        async () => {
+        async (payload) => {
+          if (soundEnabled) {
+            playNotificationSound();
+          }
           loadQuestions();
-          toast({ title: 'سؤال جديد', description: 'تم استلام سؤال جديد' });
+
+          const question = payload.new as { category?: string; question_text?: string };
+          const title = '📩 سؤال جديد!';
+          const body = `فئة: ${getCategoryLabel(question.category || 'other')}\n${question.question_text?.slice(0, 50) || ''}...`;
+
+          // Try native notification first (Tauri)
+          try {
+            const { isPermissionGranted, requestPermission, sendNotification } = await import('@tauri-apps/plugin-notification');
+            let permission = await isPermissionGranted();
+            if (!permission) {
+              const permissionRes = await requestPermission();
+              permission = permissionRes === 'granted';
+            }
+
+            if (permission) {
+              sendNotification({
+                title,
+                body,
+                icon: 'icon-mosque',
+              });
+            } else {
+              // Fallback to browser if native permission denied
+              if ('Notification' in window && Notification.permission === 'granted') {
+                new Notification(title, { body, icon: '/icon-mosque.png', tag: 'new-question' });
+              }
+            }
+          } catch (e) {
+            console.warn('Native notification failed in realtime listener:', e);
+            // Fallback to Browser Notification API
+            if ('Notification' in window && Notification.permission === 'granted') {
+              new Notification(title, { body, icon: '/icon-mosque.png', tag: 'new-question' });
+            }
+          }
+
+          toast({ title: '📩 سؤال جديد', description: 'تم استلام سؤال جديد' });
         }
       )
       .subscribe();
@@ -448,9 +513,444 @@ const AdminPage = () => {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [isAuthenticated]);
+  }, [isAuthenticated, soundEnabled]);
 
-  
+  const handleTestNotification = async () => {
+    try {
+      // Import Tauri notification plugin dynamically
+      const { isPermissionGranted, requestPermission, sendNotification } = await import('@tauri-apps/plugin-notification');
+
+      let permission = await isPermissionGranted();
+      if (!permission) {
+        const permissionRes = await requestPermission();
+        permission = permissionRes === 'granted';
+      }
+
+      if (permission) {
+        sendNotification({
+          title: '🔔 إشعار تجريبي',
+          body: 'هذا إشعار تجريبي من نظام صندوق فتوى للتأكد من وصول التنبيهات الأصلية.',
+          icon: 'icon-mosque',
+        });
+        toast({ title: '✓ تم الإرسال', description: 'تم إرسال إشعار تجريبي أصلي للنظام' });
+      } else {
+        // Fallback to browser notification if native fails or denied
+        if ('Notification' in window) {
+          const browserPerm = await Notification.requestPermission();
+          if (browserPerm === 'granted') {
+            new Notification('🔔 إشعار تجريبي', {
+              body: 'إشعار تجريبي عبر المتصفح (الصلاحية الأصلية مرفوضة)',
+              icon: '/icon-mosque.png'
+            });
+            toast({ title: '✓ تم الإرسال', description: 'تم الإرسال عبر المتصفح' });
+          } else {
+            toast({ title: '⚠️ تنبيه', description: 'يرجى تفعيل الإشعارات في النظام أولاً', variant: 'destructive' });
+          }
+        }
+      }
+    } catch (error) {
+      console.error('Error sending test notification:', error);
+      // Final fallback
+      toast({ title: '❌ خطأ', description: 'فشل إرسال الإشعار، تأكد من تحديث البرنامج', variant: 'destructive' });
+    }
+  };
+
+  const loadQuestions = async () => {
+    if (!storedPassword) return;
+    try {
+      const data = await getQuestions.mutateAsync(storedPassword);
+      setQuestions(data || []);
+      setQuestionsCount(data?.length || 0);
+    } catch {
+      // Failed to load questions
+    }
+  };
+
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
+    try {
+      const isValid = await verifyPassword.mutateAsync(password);
+      logAdminAccess(isValid, true);
+
+      if (isValid) {
+        setIsAuthenticated(true);
+        setStoredPassword(password);
+      } else {
+        toast({ title: 'خطأ', description: 'كلمة المرور غير صحيحة', variant: 'destructive' });
+      }
+    } catch {
+      logAdminAccess(false, true);
+      toast({ title: 'خطأ', description: 'حدث خطأ أثناء التحقق', variant: 'destructive' });
+    }
+    setIsLoading(false);
+  };
+
+  const handleToggleBox = async () => {
+    if (!settings || !storedPassword) return;
+    setIsLoading(true);
+    try {
+      const success = await updateSettings.mutateAsync({
+        password: storedPassword,
+        is_box_open: !isBoxOpen,
+      });
+      if (success) {
+        setIsBoxOpen(!isBoxOpen);
+        toast({ title: 'تم التحديث', description: `الصندوق ${!isBoxOpen ? 'مفتوح' : 'مغلق'} الآن` });
+      } else {
+        toast({ title: 'خطأ', description: 'فشل التحديث - تحقق من كلمة المرور', variant: 'destructive' });
+      }
+    } catch {
+      toast({ title: 'خطأ', description: 'فشل التحديث', variant: 'destructive' });
+    }
+    setIsLoading(false);
+  };
+
+  const handleUpdateSession = async () => {
+    if (!settings || !nextSessionDate || !storedPassword) return;
+    setIsLoading(true);
+    try {
+      const isoDate = new Date(nextSessionDate).toISOString();
+      const success = await updateSettings.mutateAsync({
+        password: storedPassword,
+        next_session_date: isoDate,
+      });
+      if (success) {
+        toast({ title: 'تم التحديث', description: 'تم تحديث موعد الحلقة' });
+      } else {
+        toast({ title: 'خطأ', description: 'فشل التحديث - تحقق من كلمة المرور', variant: 'destructive' });
+      }
+    } catch {
+      toast({ title: 'خطأ', description: 'فشل التحديث', variant: 'destructive' });
+    }
+    setIsLoading(false);
+  };
+
+  const handleSaveVideo = async () => {
+    if (!storedPassword || !videoUrl || !videoTitle) return;
+    setSavingVideo(true);
+    try {
+      const result = await addVideo.mutateAsync({
+        password: storedPassword,
+        title: videoTitle,
+        url: videoUrl,
+      });
+      if (result) {
+        setVideoTitle('');
+        setVideoUrl('');
+        toast({ title: 'تم الحفظ', description: 'تم إضافة الفيديو بنجاح' });
+      } else {
+        toast({ title: 'خطأ', description: 'فشل إضافة الفيديو', variant: 'destructive' });
+      }
+    } catch {
+      toast({ title: 'خطأ', description: 'فشل حفظ الفيديو', variant: 'destructive' });
+    }
+    setSavingVideo(false);
+  };
+
+  const handleDeleteVideo = async (videoId: string) => {
+    if (!storedPassword) return;
+    try {
+      const success = await deleteVideo.mutateAsync({
+        password: storedPassword,
+        videoId,
+      });
+      if (success) {
+        toast({ title: 'تم الحذف', description: 'تم حذف الفيديو' });
+      }
+    } catch {
+      toast({ title: 'خطأ', description: 'فشل الحذف', variant: 'destructive' });
+    }
+  };
+
+  const handleEditVideo = async (videoId: string, title: string, url: string) => {
+    if (!storedPassword) return;
+    try {
+      const success = await updateVideo.mutateAsync({
+        password: storedPassword,
+        videoId,
+        title,
+        url,
+      });
+      if (success) {
+        toast({ title: 'تم التحديث', description: 'تم تعديل الفيديو بنجاح' });
+      } else {
+        toast({ title: 'خطأ', description: 'فشل التعديل', variant: 'destructive' });
+      }
+    } catch {
+      toast({ title: 'خطأ', description: 'فشل تعديل الفيديو', variant: 'destructive' });
+    }
+  };
+
+  const handleSaveCountdownColors = async () => {
+    if (!storedPassword) return;
+    setSavingCountdownColors(true);
+    try {
+      const success = await updateSettings.mutateAsync({
+        password: storedPassword,
+        countdown_bg_color: countdownBgColor,
+        countdown_text_color: countdownTextColor,
+        countdown_border_color: countdownBorderColor,
+      });
+      if (success) {
+        toast({ title: 'تم الحفظ', description: 'تم حفظ ألوان العداد بنجاح' });
+      } else {
+        toast({ title: 'خطأ', description: 'فشل حفظ الألوان', variant: 'destructive' });
+      }
+    } catch {
+      toast({ title: 'خطأ', description: 'فشل حفظ الألوان', variant: 'destructive' });
+    }
+    setSavingCountdownColors(false);
+  };
+
+  const handleDragEnd = async (event: DragEndEvent) => {
+    const { active, over } = event;
+
+    if (over && active.id !== over.id) {
+      const oldIndex = localVideos.findIndex(v => v.id === active.id);
+      const newIndex = localVideos.findIndex(v => v.id === over.id);
+
+      const newVideos = arrayMove(localVideos, oldIndex, newIndex);
+      setLocalVideos(newVideos);
+
+      try {
+        await reorderVideos.mutateAsync({
+          password: storedPassword,
+          videoIds: newVideos.map(v => v.id),
+        });
+        toast({ title: 'تم الحفظ', description: 'تم تحديث ترتيب الفيديوهات' });
+      } catch {
+        toast({ title: 'خطأ', description: 'فشل حفظ الترتيب', variant: 'destructive' });
+        if (videos) setLocalVideos(videos);
+      }
+    }
+  };
+
+  const handleSaveAnnouncement = async () => {
+    if (!storedPassword || !announcementMessage) return;
+    setSavingAnnouncement(true);
+    try {
+      const result = await addAnnouncement.mutateAsync({
+        password: storedPassword,
+        message: announcementMessage,
+        type: announcementType,
+      });
+      if (result) {
+        setAnnouncementMessage('');
+        toast({ title: 'تم الحفظ', description: 'تم إضافة الإعلان بنجاح' });
+      } else {
+        toast({ title: 'خطأ', description: 'فشل إضافة الإعلان', variant: 'destructive' });
+      }
+    } catch {
+      toast({ title: 'خطأ', description: 'فشل حفظ الإعلان', variant: 'destructive' });
+    }
+    setSavingAnnouncement(false);
+  };
+
+  const handleDeleteAnnouncement = async (announcementId: string) => {
+    if (!storedPassword) return;
+    try {
+      const success = await deleteAnnouncement.mutateAsync({
+        password: storedPassword,
+        announcementId,
+      });
+      if (success) {
+        toast({ title: 'تم الحذف', description: 'تم حذف الإعلان' });
+      }
+    } catch {
+      toast({ title: 'خطأ', description: 'فشل الحذف', variant: 'destructive' });
+    }
+  };
+
+  const handleSaveFlashMessage = async () => {
+    if (!storedPassword || !flashMessage) return;
+    setSavingFlash(true);
+    try {
+      const result = await addFlashMessage.mutateAsync({
+        password: storedPassword,
+        message: flashMessage,
+        text_direction: flashDirection,
+        color: flashColor,
+        start_date: flashStartDate ? new Date(flashStartDate).toISOString() : null,
+        end_date: flashEndDate ? new Date(flashEndDate).toISOString() : null,
+        font_size: flashFontSize,
+      });
+      if (result) {
+        setFlashMessage('');
+        setFlashStartDate('');
+        setFlashEndDate('');
+        toast({ title: 'تم الحفظ', description: 'تم إضافة رسالة الفلاش بنجاح' });
+      } else {
+        toast({ title: 'خطأ', description: 'فشل إضافة رسالة الفلاش', variant: 'destructive' });
+      }
+    } catch {
+      toast({ title: 'خطأ', description: 'فشل حفظ رسالة الفلاش', variant: 'destructive' });
+    }
+    setSavingFlash(false);
+  };
+
+  const handleDeleteFlashMessage = async (flashMessageId: string) => {
+    if (!storedPassword) return;
+    try {
+      const success = await deleteFlashMessage.mutateAsync({
+        password: storedPassword,
+        flashMessageId,
+      });
+      if (success) {
+        toast({ title: 'تم الحذف', description: 'تم حذف رسالة الفلاش' });
+      }
+    } catch {
+      toast({ title: 'خطأ', description: 'فشل الحذف', variant: 'destructive' });
+    }
+  };
+
+  const handleToggleCountdown = async () => {
+    if (!storedPassword) return;
+    setIsLoading(true);
+    try {
+      const success = await updateSettings.mutateAsync({
+        password: storedPassword,
+        show_countdown: !showCountdown,
+      });
+      if (success) {
+        setShowCountdown(!showCountdown);
+        toast({ title: 'تم التحديث', description: `العداد التنازلي ${!showCountdown ? 'مفعّل' : 'معطّل'} الآن` });
+      }
+    } catch {
+      toast({ title: 'خطأ', description: 'فشل التحديث', variant: 'destructive' });
+    }
+    setIsLoading(false);
+  };
+
+  const handleSaveCountdownStyle = async (newStyle: number) => {
+    if (!storedPassword) return;
+    setSavingCountdownStyle(true);
+    try {
+      const success = await updateSettings.mutateAsync({
+        password: storedPassword,
+        countdown_style: newStyle,
+      });
+      if (success) {
+        setCountdownStyle(newStyle);
+        toast({ title: 'تم التحديث', description: 'تم حفظ نمط العداد التنازلي' });
+      }
+    } catch {
+      toast({ title: 'خطأ', description: 'فشل التحديث', variant: 'destructive' });
+    }
+    setSavingCountdownStyle(false);
+  };
+
+  const handleToggleQuestionCount = async () => {
+    if (!storedPassword) return;
+    setIsLoading(true);
+    try {
+      const success = await updateSettings.mutateAsync({
+        password: storedPassword,
+        show_question_count: !showQuestionCount,
+      });
+      if (success) {
+        setShowQuestionCount(!showQuestionCount);
+        toast({ title: 'تم التحديث', description: `عداد الأسئلة ${!showQuestionCount ? 'مفعّل' : 'معطّل'} الآن` });
+      }
+    } catch {
+      toast({ title: 'خطأ', description: 'فشل التحديث', variant: 'destructive' });
+    }
+    setIsLoading(false);
+  };
+
+  const handleToggleInstallPage = async () => {
+    if (!storedPassword) return;
+    setIsLoading(true);
+    try {
+      const success = await updateSettings.mutateAsync({
+        password: storedPassword,
+        show_install_page: !showInstallPage,
+      });
+      if (success) {
+        setShowInstallPage(!showInstallPage);
+        toast({ title: 'تم التحديث', description: `صفحة التثبيت ${!showInstallPage ? 'مفعّلة' : 'معطّلة'} الآن` });
+      }
+    } catch {
+      toast({ title: 'خطأ', description: 'فشل التحديث', variant: 'destructive' });
+    }
+    setIsLoading(false);
+  };
+
+  const handleToggleContentFilter = async () => {
+    if (!storedPassword) return;
+    setIsLoading(true);
+    try {
+      const success = await updateSettings.mutateAsync({
+        password: storedPassword,
+        content_filter_enabled: !contentFilterEnabled,
+      } as any);
+      if (success) {
+        setContentFilterEnabled(!contentFilterEnabled);
+        toast({ title: 'تم التحديث', description: `فلتر المحتوى ${!contentFilterEnabled ? 'مفعّل' : 'معطّل'} الآن` });
+      }
+    } catch {
+      toast({ title: 'خطأ', description: 'فشل التحديث', variant: 'destructive' });
+    }
+    setIsLoading(false);
+  };
+
+  const handleSendPushNotification = async () => {
+    if (!storedPassword || !notifTitle.trim() || !notifBody.trim()) return;
+    setSendingNotification(true);
+    try {
+      // إرسال الإشعار عبر Edge Function
+      const { data, error } = await supabase.functions.invoke('send-notification', {
+        body: {
+          action: 'send',
+          notification: {
+            title: notifTitle.trim(),
+            body: notifBody.trim(),
+          },
+          admin_password: storedPassword
+        }
+      });
+
+      if (error) throw error;
+
+      // حفظ في سجل الإشعارات
+      await supabase.rpc('add_notification_authenticated', {
+        p_password: storedPassword,
+        p_title: notifTitle.trim(),
+        p_body: notifBody.trim(),
+        p_recipients_count: data?.tokens_count || 0
+      });
+
+      setNotifTitle('');
+      setNotifBody('');
+      await loadNotificationHistory();
+
+      toast({
+        title: '✓ تم الإرسال',
+        description: `تم إرسال الإشعار إلى ${data?.tokens_count || 0} جهاز`
+      });
+    } catch (error) {
+      console.error('Error sending notification:', error);
+      toast({ title: 'خطأ', description: 'فشل إرسال الإشعار', variant: 'destructive' });
+    }
+    setSendingNotification(false);
+  };
+
+  // Load push tokens list
+  const loadPushTokens = async () => {
+    if (!storedPassword) return;
+    try {
+      const { data, error } = await supabase
+        .from('push_tokens')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      setPushTokensList(data || []);
+    } catch (error) {
+      console.error('Error loading push tokens:', error);
+    }
+  };
+
   // Set device as admin
   const handleSetAdminDevice = async () => {
     if (!storedPassword || !adminDeviceToken.trim()) return;
@@ -469,12 +969,12 @@ const AdminPage = () => {
       setAdminDeviceToken('');
       await loadPushTokens();
       toast({
-        title: 'âœ“ طھظ… ط§ظ„طھط¹ظٹظٹظ†',
-        description: 'طھظ… طھط¹ظٹظٹظ† ط§ظ„ط¬ظ‡ط§ط² ظƒظ…ط³ط¤ظˆظ„ ط¨ظ†ط¬ط§ط­'
+        title: '✓ تم التعيين',
+        description: 'تم تعيين الجهاز كمسؤول بنجاح'
       });
     } catch (error) {
       console.error('Error setting admin device:', error);
-      toast({ title: 'ط®ط·ط£', description: 'ظپط´ظ„ طھط¹ظٹظٹظ† ط§ظ„ط¬ظ‡ط§ط² ظƒظ…ط³ط¤ظˆظ„', variant: 'destructive' });
+      toast({ title: 'خطأ', description: 'فشل تعيين الجهاز كمسؤول', variant: 'destructive' });
     }
     setSettingAdminDevice(false);
   };
@@ -491,10 +991,10 @@ const AdminPage = () => {
       if (error) throw error;
 
       setNotificationHistory(prev => prev.filter(n => n.id !== notificationId));
-      toast({ title: 'âœ“ طھظ… ط§ظ„ط­ط°ظپ', description: 'طھظ… ط­ط°ظپ ط§ظ„ط¥ط´ط¹ط§ط± ط¨ظ†ط¬ط§ط­' });
+      toast({ title: '✓ تم الحذف', description: 'تم حذف الإشعار بنجاح' });
     } catch (error) {
       console.error('Error deleting notification:', error);
-      toast({ title: 'ط®ط·ط£', description: 'ظپط´ظ„ ط­ط°ظپ ط§ظ„ط¥ط´ط¹ط§ط±', variant: 'destructive' });
+      toast({ title: 'خطأ', description: 'فشل حذف الإشعار', variant: 'destructive' });
     }
   };
 
@@ -507,10 +1007,10 @@ const AdminPage = () => {
         setQuestions([]);
         setQuestionsCount(0);
         setSelectedQuestions([]);
-        toast({ title: 'طھظ… ط§ظ„ط­ط°ظپ', description: 'طھظ… ط­ط°ظپ ط¬ظ…ظٹط¹ ط§ظ„ط£ط³ط¦ظ„ط© ط¨ظ†ط¬ط§ط­' });
+        toast({ title: 'تم الحذف', description: 'تم حذف جميع الأسئلة بنجاح' });
       }
     } catch {
-      toast({ title: 'ط®ط·ط£', description: 'ظپط´ظ„ ط­ط°ظپ ط§ظ„ط£ط³ط¦ظ„ط©', variant: 'destructive' });
+      toast({ title: 'خطأ', description: 'فشل حذف الأسئلة', variant: 'destructive' });
     }
     setIsLoading(false);
   };
@@ -526,11 +1026,11 @@ const AdminPage = () => {
       if (success) {
         setQuestions(prev => prev.filter(q => !selectedQuestions.includes(q.id)));
         setQuestionsCount(prev => (prev ?? 0) - selectedQuestions.length);
-        toast({ title: 'طھظ… ط§ظ„ط­ط°ظپ', description: `طھظ… ط­ط°ظپ ${selectedQuestions.length} ط³ط¤ط§ظ„` });
+        toast({ title: 'تم الحذف', description: `تم حذف ${selectedQuestions.length} سؤال` });
         setSelectedQuestions([]);
       }
     } catch {
-      toast({ title: 'ط®ط·ط£', description: 'ظپط´ظ„ ط­ط°ظپ ط§ظ„ط£ط³ط¦ظ„ط© ط§ظ„ظ…ط­ط¯ط¯ط©', variant: 'destructive' });
+      toast({ title: 'خطأ', description: 'فشل حذف الأسئلة المحددة', variant: 'destructive' });
     }
     setIsLoading(false);
   };
@@ -567,20 +1067,20 @@ const AdminPage = () => {
           </div>
 
           <div className="text-center mb-8">
-            <h2 className="text-2xl font-bold mb-2">ظ„ظˆط­ط© ط§ظ„طھط­ظƒظ…</h2>
-            <p className="text-sm text-muted-foreground">ط£ط¯ط®ظ„ ظƒظ„ظ…ط© ط§ظ„ظ…ط±ظˆط± ظ„ظ„ظˆطµظˆظ„ ط¥ظ„ظ‰ ظ„ظˆط­ط© ط§ظ„ط¥ط¯ط§ط±ط©</p>
+            <h2 className="text-2xl font-bold mb-2">لوحة التحكم</h2>
+            <p className="text-sm text-muted-foreground">أدخل كلمة المرور للوصول إلى لوحة الإدارة</p>
           </div>
 
           <form onSubmit={handleLogin} className="space-y-6">
             <div className="space-y-2">
-              <label className="block text-sm font-medium">ظƒظ„ظ…ط© ط§ظ„ظ…ط±ظˆط±</label>
+              <label className="block text-sm font-medium">كلمة المرور</label>
               <div className="relative">
                 <Lock className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
                 <Input
                   type="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  placeholder="â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢"
+                  placeholder="••••••••"
                   className="pr-11 text-center h-12 text-lg rounded-xl bg-muted/50 border-muted-foreground/20 focus:border-primary transition-colors"
                 />
               </div>
@@ -593,12 +1093,12 @@ const AdminPage = () => {
               {isLoading ? (
                 <>
                   <RefreshCw className="w-5 h-5 ml-2 animate-spin" />
-                  ط¬ط§ط±ظچ ط§ظ„طھط­ظ‚ظ‚...
+                  جارٍ التحقق...
                 </>
               ) : (
                 <>
                   <Lock className="w-5 h-5 ml-2" />
-                  ط¯ط®ظˆظ„
+                  دخول
                 </>
               )}
             </Button>
@@ -612,7 +1112,7 @@ const AdminPage = () => {
               className="text-muted-foreground hover:text-foreground"
             >
               <Home className="w-4 h-4 ml-2" />
-              ط§ظ„ط¹ظˆط¯ط© ظ„ظ„ط±ط¦ظٹط³ظٹط©
+              العودة للرئيسية
             </Button>
           </div>
         </div>
@@ -623,7 +1123,7 @@ const AdminPage = () => {
   if (settingsLoading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="text-lg">ط¬ط§ط±ظچ ط§ظ„طھط­ظ…ظٹظ„...</div>
+        <div className="text-lg">جارٍ التحميل...</div>
       </div>
     );
   }
@@ -633,9 +1133,17 @@ const AdminPage = () => {
       {/* Header */}
       <header className="sticky top-0 z-10 bg-card border-b border-border px-4 py-3">
         <div className="container mx-auto flex items-center justify-between">
-          <h1 className="text-xl font-bold">ظ„ظˆط­ط© ط§ظ„طھط­ظƒظ…</h1>
+          <h1 className="text-xl font-bold">لوحة التحكم</h1>
           <div className="flex items-center gap-2">
             <ThemeToggle />
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setSoundEnabled(!soundEnabled)}
+              title={soundEnabled ? 'إيقاف الصوت' : 'تشغيل الصوت'}
+            >
+              {soundEnabled ? <Bell className="w-5 h-5" /> : <BellOff className="w-5 h-5" />}
+            </Button>
             <Button variant="ghost" size="icon" onClick={() => navigate('/')}>
               <Home className="w-5 h-5" />
             </Button>
@@ -647,38 +1155,38 @@ const AdminPage = () => {
         {/* Questions Count Summary */}
         <div className="bg-primary/10 rounded-xl p-4 mb-6 text-center">
           <div className="text-3xl font-bold text-primary">{questionsCount ?? 0}</div>
-          <div className="text-sm text-muted-foreground">ط³ط¤ط§ظ„ ظ…ط³طھظ„ظ…</div>
+          <div className="text-sm text-muted-foreground">سؤال مستلم</div>
         </div>
 
         <Tabs defaultValue="stats" className="w-full">
           <TabsList className="grid w-full grid-cols-9 mb-6">
             <TabsTrigger value="stats" className="flex items-center gap-1">
               <BarChart3 className="w-4 h-4" />
-              <span className="hidden md:inline">ط¥ط­طµط§ط¦ظٹط§طھ</span>
+              <span className="hidden md:inline">إحصائيات</span>
             </TabsTrigger>
             <TabsTrigger value="questions" className="flex items-center gap-1">
               <List className="w-4 h-4" />
-              <span className="hidden md:inline">ط§ظ„ط£ط³ط¦ظ„ط©</span>
+              <span className="hidden md:inline">الأسئلة</span>
             </TabsTrigger>
             <TabsTrigger value="videos" className="flex items-center gap-1">
               <Video className="w-4 h-4" />
-              <span className="hidden md:inline">ط§ظ„ظپظٹط¯ظٹظˆ</span>
+              <span className="hidden md:inline">الفيديو</span>
             </TabsTrigger>
             <TabsTrigger value="announcements" className="flex items-center gap-1">
               <Megaphone className="w-4 h-4" />
-              <span className="hidden md:inline">ط§ظ„ط¥ط¹ظ„ط§ظ†ط§طھ</span>
+              <span className="hidden md:inline">الإعلانات</span>
             </TabsTrigger>
             <TabsTrigger value="flash" className="flex items-center gap-1">
               <Zap className="w-4 h-4" />
-              <span className="hidden md:inline">ظپظ„ط§ط´</span>
+              <span className="hidden md:inline">فلاش</span>
             </TabsTrigger>
             <TabsTrigger value="notifications" className="flex items-center gap-1">
               <Bell className="w-4 h-4" />
-              <span className="hidden md:inline">ط¥ط´ط¹ط§ط±ط§طھ</span>
+              <span className="hidden md:inline">إشعارات</span>
             </TabsTrigger>
             <TabsTrigger value="reports" className="flex items-center gap-1 relative">
               <Bug className="w-4 h-4" />
-              <span className="hidden md:inline">ط§ظ„ط¨ظ„ط§ط؛ط§طھ</span>
+              <span className="hidden md:inline">البلاغات</span>
               {userReports.filter(r => r.status === 'pending').length > 0 && (
                 <span className="absolute -top-1 -right-1 bg-destructive text-destructive-foreground text-xs rounded-full w-4 h-4 flex items-center justify-center">
                   {userReports.filter(r => r.status === 'pending').length}
@@ -687,11 +1195,11 @@ const AdminPage = () => {
             </TabsTrigger>
             <TabsTrigger value="logs" className="flex items-center gap-1">
               <Shield className="w-4 h-4" />
-              <span className="hidden md:inline">ط§ظ„ط³ط¬ظ„</span>
+              <span className="hidden md:inline">السجل</span>
             </TabsTrigger>
             <TabsTrigger value="settings" className="flex items-center gap-1">
               <Settings className="w-4 h-4" />
-              <span className="hidden md:inline">ط§ظ„ط¥ط¹ط¯ط§ط¯ط§طھ</span>
+              <span className="hidden md:inline">الإعدادات</span>
             </TabsTrigger>
           </TabsList>
 
@@ -699,13 +1207,13 @@ const AdminPage = () => {
           <TabsContent value="stats" className="space-y-6">
             <h3 className="text-lg font-medium flex items-center gap-2">
               <BarChart3 className="w-5 h-5 text-primary" />
-              ط¥ط­طµط§ط¦ظٹط§طھ ط§ظ„ط£ط³ط¦ظ„ط©
+              إحصائيات الأسئلة
             </h3>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* ط§ظ„ط£ط³ط¦ظ„ط© ط­ط³ط¨ ط§ظ„ظپط¦ط© */}
+              {/* الأسئلة حسب الفئة */}
               <div className="bg-card border border-border rounded-lg p-4">
-                <h4 className="font-medium mb-4 text-center">ط§ظ„ط£ط³ط¦ظ„ط© ط­ط³ط¨ ط§ظ„ظپط¦ط©</h4>
+                <h4 className="font-medium mb-4 text-center">الأسئلة حسب الفئة</h4>
                 {questionStats.categoryData.length > 0 ? (
                   <ResponsiveContainer width="100%" height={250}>
                     <PieChart>
@@ -728,14 +1236,14 @@ const AdminPage = () => {
                   </ResponsiveContainer>
                 ) : (
                   <div className="h-[250px] flex items-center justify-center text-muted-foreground">
-                    ظ„ط§ طھظˆط¬ط¯ ط¨ظٹط§ظ†ط§طھ
+                    لا توجد بيانات
                   </div>
                 )}
               </div>
 
-              {/* ط§ظ„ط£ط³ط¦ظ„ط© ط­ط³ط¨ ط§ظ„ظٹظˆظ… */}
+              {/* الأسئلة حسب اليوم */}
               <div className="bg-card border border-border rounded-lg p-4">
-                <h4 className="font-medium mb-4 text-center">ط§ظ„ط£ط³ط¦ظ„ط© ظپظٹ ط¢ط®ط± 7 ط£ظٹط§ظ…</h4>
+                <h4 className="font-medium mb-4 text-center">الأسئلة في آخر 7 أيام</h4>
                 {questions.length > 0 ? (
                   <ResponsiveContainer width="100%" height={250}>
                     <BarChart data={questionStats.dailyData}>
@@ -743,19 +1251,19 @@ const AdminPage = () => {
                       <XAxis dataKey="name" fontSize={12} />
                       <YAxis fontSize={12} />
                       <Tooltip />
-                      <Bar dataKey="count" fill="#3b82f6" name="ط¹ط¯ط¯ ط§ظ„ط£ط³ط¦ظ„ط©" />
+                      <Bar dataKey="count" fill="#3b82f6" name="عدد الأسئلة" />
                     </BarChart>
                   </ResponsiveContainer>
                 ) : (
                   <div className="h-[250px] flex items-center justify-center text-muted-foreground">
-                    ظ„ط§ طھظˆط¬ط¯ ط¨ظٹط§ظ†ط§طھ
+                    لا توجد بيانات
                   </div>
                 )}
               </div>
 
-              {/* ط§ظ„ط²ظˆط§ط± ط­ط³ط¨ ط§ظ„ظٹظˆظ… */}
+              {/* الزوار حسب اليوم */}
               <div className="bg-card border border-border rounded-lg p-4">
-                <h4 className="font-medium mb-4 text-center">ط§ظ„ط²ظˆط§ط± ظپظٹ ط¢ط®ط± 7 ط£ظٹط§ظ…</h4>
+                <h4 className="font-medium mb-4 text-center">الزوار في آخر 7 أيام</h4>
                 {accessLogs.length > 0 ? (
                   <ResponsiveContainer width="100%" height={250}>
                     <BarChart data={visitorStats}>
@@ -763,44 +1271,44 @@ const AdminPage = () => {
                       <XAxis dataKey="name" fontSize={12} />
                       <YAxis fontSize={12} />
                       <Tooltip />
-                      <Bar dataKey="count" fill="#10b981" name="ط¹ط¯ط¯ ط§ظ„ط²ظˆط§ط±" />
+                      <Bar dataKey="count" fill="#10b981" name="عدد الزوار" />
                     </BarChart>
                   </ResponsiveContainer>
                 ) : (
                   <div className="h-[250px] flex items-center justify-center text-muted-foreground">
-                    ظ„ط§ طھظˆط¬ط¯ ط¨ظٹط§ظ†ط§طھ
+                    لا توجد بيانات
                   </div>
                 )}
               </div>
             </div>
 
-            {/* ظ…ظ„ط®طµ ط§ظ„ط¥ط­طµط§ط¦ظٹط§طھ */}
+            {/* ملخص الإحصائيات */}
             <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
               <div className="bg-card border border-border rounded-lg p-4 text-center">
                 <div className="text-2xl font-bold text-primary">{questions.length}</div>
-                <div className="text-sm text-muted-foreground">ط¥ط¬ظ…ط§ظ„ظٹ ط§ظ„ط£ط³ط¦ظ„ط©</div>
+                <div className="text-sm text-muted-foreground">إجمالي الأسئلة</div>
               </div>
               <div className="bg-card border border-border rounded-lg p-4 text-center">
                 <div className="text-2xl font-bold text-green-500">{questionStats.categoryData.length}</div>
-                <div className="text-sm text-muted-foreground">ظپط¦ط§طھ ظ…ط®طھظ„ظپط©</div>
+                <div className="text-sm text-muted-foreground">فئات مختلفة</div>
               </div>
               <div className="bg-card border border-border rounded-lg p-4 text-center">
                 <div className="text-2xl font-bold text-blue-500">
                   {accessLogs.length}
                 </div>
-                <div className="text-sm text-muted-foreground">ط¥ط¬ظ…ط§ظ„ظٹ ط§ظ„ط²ظˆط§ط±</div>
+                <div className="text-sm text-muted-foreground">إجمالي الزوار</div>
               </div>
               <div className="bg-card border border-border rounded-lg p-4 text-center">
                 <div className="text-2xl font-bold text-amber-500">
                   {accessLogs.filter(l => l.is_authorized).length}
                 </div>
-                <div className="text-sm text-muted-foreground">ط¯ط®ظˆظ„ ظ†ط§ط¬ط­</div>
+                <div className="text-sm text-muted-foreground">دخول ناجح</div>
               </div>
               <div className="bg-card border border-border rounded-lg p-4 text-center">
                 <div className="text-2xl font-bold text-destructive">
                   {accessLogs.filter(l => !l.is_authorized).length}
                 </div>
-                <div className="text-sm text-muted-foreground">ظ…ط­ط§ظˆظ„ط§طھ ظپط§ط´ظ„ط©</div>
+                <div className="text-sm text-muted-foreground">محاولات فاشلة</div>
               </div>
             </div>
           </TabsContent>
@@ -834,7 +1342,7 @@ const AdminPage = () => {
                     onClick={toggleSelectAll}
                   >
                     <CheckSquare className="w-4 h-4 ml-2" />
-                    {selectedQuestions.length === questions.length ? 'ط¥ظ„ط؛ط§ط، ط§ظ„طھط­ط¯ظٹط¯' : 'طھط­ط¯ظٹط¯ ط§ظ„ظƒظ„'}
+                    {selectedQuestions.length === questions.length ? 'إلغاء التحديد' : 'تحديد الكل'}
                   </Button>
                 )}
               </div>
@@ -848,23 +1356,23 @@ const AdminPage = () => {
                         size="sm"
                       >
                         <Trash2 className="w-4 h-4 ml-2" />
-                        ط­ط°ظپ ط§ظ„ظ…ط­ط¯ط¯ ({selectedQuestions.length})
+                        حذف المحدد ({selectedQuestions.length})
                       </Button>
                     </AlertDialogTrigger>
                     <AlertDialogContent dir="rtl">
                       <AlertDialogHeader>
                         <AlertDialogTitle className="flex items-center gap-2">
                           <AlertTriangle className="w-5 h-5 text-destructive" />
-                          طھط£ظƒظٹط¯ ط§ظ„ط­ط°ظپ
+                          تأكيد الحذف
                         </AlertDialogTitle>
                         <AlertDialogDescription>
-                          ظ‡ظ„ ط£ظ†طھ ظ…طھط£ظƒط¯ ظ…ظ† ط­ط°ظپ {selectedQuestions.length} ط³ط¤ط§ظ„طں ظ„ط§ ظٹظ…ظƒظ† ط§ظ„طھط±ط§ط¬ط¹ ط¹ظ† ظ‡ط°ط§ ط§ظ„ط¥ط¬ط±ط§ط،.
+                          هل أنت متأكد من حذف {selectedQuestions.length} سؤال؟ لا يمكن التراجع عن هذا الإجراء.
                         </AlertDialogDescription>
                       </AlertDialogHeader>
                       <AlertDialogFooter className="flex-row-reverse gap-2">
-                        <AlertDialogCancel>ط¥ظ„ط؛ط§ط،</AlertDialogCancel>
+                        <AlertDialogCancel>إلغاء</AlertDialogCancel>
                         <AlertDialogAction onClick={handleDeleteSelectedQuestions} className="bg-destructive hover:bg-destructive/90">
-                          ط­ط°ظپ ط§ظ„ظ…ط­ط¯ط¯
+                          حذف المحدد
                         </AlertDialogAction>
                       </AlertDialogFooter>
                     </AlertDialogContent>
@@ -878,23 +1386,23 @@ const AdminPage = () => {
                       disabled={questions.length === 0}
                     >
                       <Trash2 className="w-4 h-4 ml-2" />
-                      ط­ط°ظپ ط§ظ„ظƒظ„
+                      حذف الكل
                     </Button>
                   </AlertDialogTrigger>
                   <AlertDialogContent dir="rtl">
                     <AlertDialogHeader>
                       <AlertDialogTitle className="flex items-center gap-2">
                         <AlertTriangle className="w-5 h-5 text-destructive" />
-                        طھط£ظƒظٹط¯ ط§ظ„ط­ط°ظپ
+                        تأكيد الحذف
                       </AlertDialogTitle>
                       <AlertDialogDescription>
-                        ظ‡ظ„ ط£ظ†طھ ظ…طھط£ظƒط¯ ظ…ظ† ط­ط°ظپ ط¬ظ…ظٹط¹ ط§ظ„ط£ط³ط¦ظ„ط©طں ظ„ط§ ظٹظ…ظƒظ† ط§ظ„طھط±ط§ط¬ط¹ ط¹ظ† ظ‡ط°ط§ ط§ظ„ط¥ط¬ط±ط§ط،.
+                        هل أنت متأكد من حذف جميع الأسئلة؟ لا يمكن التراجع عن هذا الإجراء.
                       </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter className="flex-row-reverse gap-2">
-                      <AlertDialogCancel>ط¥ظ„ط؛ط§ط،</AlertDialogCancel>
+                      <AlertDialogCancel>إلغاء</AlertDialogCancel>
                       <AlertDialogAction onClick={handleDeleteAllQuestions} className="bg-destructive hover:bg-destructive/90">
-                        ط­ط°ظپ ط§ظ„ظƒظ„
+                        حذف الكل
                       </AlertDialogAction>
                     </AlertDialogFooter>
                   </AlertDialogContent>
@@ -902,34 +1410,34 @@ const AdminPage = () => {
               </div>
             </div>
 
-            {/* ظپظ„ط§طھط± ط§ظ„ط£ط³ط¦ظ„ط© */}
+            {/* فلاتر الأسئلة */}
             <div className="bg-card border border-border rounded-lg p-4 space-y-4">
               <div className="flex items-center gap-2 text-sm font-medium">
                 <Filter className="w-4 h-4" />
-                طھطµظپظٹط© ط§ظ„ط£ط³ط¦ظ„ط©
+                تصفية الأسئلة
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm mb-1">ط­ط³ط¨ ط§ظ„ظˆظ‚طھ</label>
+                  <label className="block text-sm mb-1">حسب الوقت</label>
                   <Select value={questionFilter} onValueChange={(v) => setQuestionFilter(v as typeof questionFilter)}>
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="all">ط¬ظ…ظٹط¹ ط§ظ„ط£ط³ط¦ظ„ط©</SelectItem>
-                      <SelectItem value="old">ط£ط³ط¦ظ„ط© ظ‚ط¯ظٹظ…ط©</SelectItem>
-                      <SelectItem value="new">ط£ط³ط¦ظ„ط© ط¬ط¯ظٹط¯ط© (ط¢ط®ط± 24 ط³ط§ط¹ط©)</SelectItem>
+                      <SelectItem value="all">جميع الأسئلة</SelectItem>
+                      <SelectItem value="old">أسئلة قديمة</SelectItem>
+                      <SelectItem value="new">أسئلة جديدة (آخر 24 ساعة)</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
                 <div>
-                  <label className="block text-sm mb-1">ط­ط³ط¨ ظ†ظˆط¹ ط§ظ„ظپطھظˆظ‰</label>
+                  <label className="block text-sm mb-1">حسب نوع الفتوى</label>
                   <Select value={questionCategoryFilter} onValueChange={setQuestionCategoryFilter}>
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="all">ط¬ظ…ظٹط¹ ط§ظ„ط£ظ†ظˆط§ط¹</SelectItem>
+                      <SelectItem value="all">جميع الأنواع</SelectItem>
                       {Array.from(new Set(questions.map(q => q.category))).map(cat => (
                         <SelectItem key={cat} value={cat}>
                           {getCategoryLabel(cat)}
@@ -942,7 +1450,7 @@ const AdminPage = () => {
               {(questionFilter !== 'all' || questionCategoryFilter !== 'all') && (
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-muted-foreground">
-                    ط¹ط±ط¶ {filteredQuestions.length} ظ…ظ† {questions.length} ط³ط¤ط§ظ„
+                    عرض {filteredQuestions.length} من {questions.length} سؤال
                   </span>
                   <Button
                     variant="ghost"
@@ -952,7 +1460,7 @@ const AdminPage = () => {
                       setQuestionCategoryFilter('all');
                     }}
                   >
-                    ظ…ط³ط­ ط§ظ„ظپظ„ط§طھط±
+                    مسح الفلاتر
                   </Button>
                 </div>
               )}
@@ -962,7 +1470,7 @@ const AdminPage = () => {
               {filteredQuestions.length === 0 ? (
                 <div className="text-center py-12 text-muted-foreground">
                   <MessageSquare className="w-16 h-16 mx-auto mb-4 opacity-50" />
-                  <p className="text-lg">ظ„ط§ طھظˆط¬ط¯ ط£ط³ط¦ظ„ط© ط­طھظ‰ ط§ظ„ط¢ظ†</p>
+                  <p className="text-lg">لا توجد أسئلة حتى الآن</p>
                 </div>
               ) : (
                 filteredQuestions.map((q, index) => (
@@ -997,22 +1505,22 @@ const AdminPage = () => {
             </div>
           </TabsContent>
 
-          {/* User Reports Tab - ط¨ظ„ط§ط؛ط§طھ ط§ظ„ظ…ط³طھط®ط¯ظ…ظٹظ† */}
+          {/* User Reports Tab - بلاغات المستخدمين */}
           <TabsContent value="reports" className="space-y-4">
             <div className="flex justify-between items-center">
               <h3 className="font-medium flex items-center gap-2">
                 <Bug className="w-5 h-5 text-primary" />
-                ط¨ظ„ط§ط؛ط§طھ ط§ظ„ظ…ط³طھط®ط¯ظ…ظٹظ† ({userReports.length})
+                بلاغات المستخدمين ({userReports.length})
               </h3>
               <Button variant="outline" size="sm" onClick={loadUserReports}>
-                طھط­ط¯ظٹط«
+                تحديث
               </Button>
             </div>
 
             {userReports.length === 0 ? (
               <div className="text-center py-12 text-muted-foreground">
                 <AlertCircle className="w-12 h-12 mx-auto mb-4 opacity-50" />
-                <p>ظ„ط§ طھظˆط¬ط¯ ط¨ظ„ط§ط؛ط§طھ ط­ط§ظ„ظٹط§ظ‹</p>
+                <p>لا توجد بلاغات حالياً</p>
               </div>
             ) : (
               <div className="space-y-3">
@@ -1025,13 +1533,13 @@ const AdminPage = () => {
                             report.report_type === 'suggestion' ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400' :
                               'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'
                             }`}>
-                            {report.report_type === 'bug' ? 'ظ…ط´ظƒظ„ط© طھظ‚ظ†ظٹط©' : report.report_type === 'suggestion' ? 'ط§ظ‚طھط±ط§ط­' : 'ط£ط®ط±ظ‰'}
+                            {report.report_type === 'bug' ? 'مشكلة تقنية' : report.report_type === 'suggestion' ? 'اقتراح' : 'أخرى'}
                           </span>
                           <span className={`px-2 py-0.5 text-xs rounded-full ${report.status === 'pending' ? 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400' :
                             report.status === 'reviewed' ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400' :
                               'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
                             }`}>
-                            {report.status === 'pending' ? 'ظ…ط¹ظ„ظ‚' : report.status === 'reviewed' ? 'طھظ…طھ ط§ظ„ظ…ط±ط§ط¬ط¹ط©' : 'طھظ… ط§ظ„ط­ظ„'}
+                            {report.status === 'pending' ? 'معلق' : report.status === 'reviewed' ? 'تمت المراجعة' : 'تم الحل'}
                           </span>
                           <span className="text-xs text-muted-foreground">
                             {new Date(report.created_at).toLocaleDateString('ar-SA')}
@@ -1039,7 +1547,7 @@ const AdminPage = () => {
                         </div>
                         <p className="text-sm mb-2">{report.message}</p>
                         {report.email && (
-                          <p className="text-xs text-muted-foreground">ًں“§ {report.email}</p>
+                          <p className="text-xs text-muted-foreground">📧 {report.email}</p>
                         )}
                       </div>
                       <div className="flex items-center gap-2">
@@ -1051,9 +1559,9 @@ const AdminPage = () => {
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="pending">ظ…ط¹ظ„ظ‚</SelectItem>
-                            <SelectItem value="reviewed">طھظ…طھ ط§ظ„ظ…ط±ط§ط¬ط¹ط©</SelectItem>
-                            <SelectItem value="resolved">طھظ… ط§ظ„ط­ظ„</SelectItem>
+                            <SelectItem value="pending">معلق</SelectItem>
+                            <SelectItem value="reviewed">تمت المراجعة</SelectItem>
+                            <SelectItem value="resolved">تم الحل</SelectItem>
                           </SelectContent>
                         </Select>
                         <AlertDialog>
@@ -1064,15 +1572,15 @@ const AdminPage = () => {
                           </AlertDialogTrigger>
                           <AlertDialogContent>
                             <AlertDialogHeader>
-                              <AlertDialogTitle>ط­ط°ظپ ط§ظ„ط¨ظ„ط§ط؛</AlertDialogTitle>
+                              <AlertDialogTitle>حذف البلاغ</AlertDialogTitle>
                               <AlertDialogDescription>
-                                ظ‡ظ„ ط£ظ†طھ ظ…طھط£ظƒط¯ ظ…ظ† ط­ط°ظپ ظ‡ط°ط§ ط§ظ„ط¨ظ„ط§ط؛طں ظ„ط§ ظٹظ…ظƒظ† ط§ظ„طھط±ط§ط¬ط¹ ط¹ظ† ظ‡ط°ط§ ط§ظ„ط¥ط¬ط±ط§ط،.
+                                هل أنت متأكد من حذف هذا البلاغ؟ لا يمكن التراجع عن هذا الإجراء.
                               </AlertDialogDescription>
                             </AlertDialogHeader>
                             <AlertDialogFooter>
-                              <AlertDialogCancel>ط¥ظ„ط؛ط§ط،</AlertDialogCancel>
+                              <AlertDialogCancel>إلغاء</AlertDialogCancel>
                               <AlertDialogAction onClick={() => handleDeleteReport(report.id)}>
-                                ط­ط°ظپ
+                                حذف
                               </AlertDialogAction>
                             </AlertDialogFooter>
                           </AlertDialogContent>
@@ -1085,12 +1593,12 @@ const AdminPage = () => {
             )}
           </TabsContent>
 
-          {/* Logs Tab - ط³ط¬ظ„ ط§ظ„ط¯ط®ظˆظ„ */}
+          {/* Logs Tab - سجل الدخول */}
           <TabsContent value="logs" className="space-y-4">
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
               <h3 className="font-medium flex items-center gap-2">
                 <Shield className="w-5 h-5 text-primary" />
-                ط³ط¬ظ„ ظ…ط­ط§ظˆظ„ط§طھ ط§ظ„ط¯ط®ظˆظ„ ({filteredLogs.length})
+                سجل محاولات الدخول ({filteredLogs.length})
               </h3>
               <div className="flex items-center gap-2">
                 <Button
@@ -1100,50 +1608,50 @@ const AdminPage = () => {
                   className="bg-amber-600 hover:bg-amber-700"
                 >
                   <Lock className="w-4 h-4 ml-2" />
-                  ط³ط¬ظ„ط§طھ ط§ظ„ط£ظ…ط§ظ† ط§ظ„ظ…طھظ‚ط¯ظ…ط©
+                  سجلات الأمان المتقدمة
                 </Button>
                 <Button variant="outline" size="sm" onClick={loadAccessLogs}>
                   <RefreshCw className="w-4 h-4 ml-2" />
-                  طھط­ط¯ظٹط«
+                  تحديث
                 </Button>
               </div>
             </div>
 
-            {/* ظپظ„ط§طھط± ط§ظ„ط¨ط­ط« */}
+            {/* فلاتر البحث */}
             <div className="bg-card border border-border rounded-lg p-4 space-y-4">
               <div className="flex items-center gap-2 text-sm font-medium">
                 <Filter className="w-4 h-4" />
-                ط§ظ„ط¨ط­ط« ظˆط§ظ„ظپظ„طھط±ط©
+                البحث والفلترة
               </div>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
-                  <label className="block text-sm mb-1">ط§ظ„ط¨ط­ط« ط¨ظ€ IP</label>
+                  <label className="block text-sm mb-1">البحث بـ IP</label>
                   <div className="relative">
                     <Search className="w-4 h-4 absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
                     <Input
                       value={logSearchIP}
                       onChange={(e) => setLogSearchIP(e.target.value)}
-                      placeholder="ط§ط¨ط­ط« ط¨ط¹ظ†ظˆط§ظ† IP..."
+                      placeholder="ابحث بعنوان IP..."
                       className="pr-10"
                       dir="ltr"
                     />
                   </div>
                 </div>
                 <div>
-                  <label className="block text-sm mb-1">ط§ظ„ط­ط§ظ„ط©</label>
+                  <label className="block text-sm mb-1">الحالة</label>
                   <Select value={logFilterStatus} onValueChange={(v) => setLogFilterStatus(v as typeof logFilterStatus)}>
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="all">ط§ظ„ظƒظ„</SelectItem>
-                      <SelectItem value="authorized">ط¯ط®ظˆظ„ ظ†ط§ط¬ط­</SelectItem>
-                      <SelectItem value="failed">ظ…ط­ط§ظˆظ„ط§طھ ظپط§ط´ظ„ط©</SelectItem>
+                      <SelectItem value="all">الكل</SelectItem>
+                      <SelectItem value="authorized">دخول ناجح</SelectItem>
+                      <SelectItem value="failed">محاولات فاشلة</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
                 <div>
-                  <label className="block text-sm mb-1">ط§ظ„طھط§ط±ظٹط®</label>
+                  <label className="block text-sm mb-1">التاريخ</label>
                   <Input
                     type="date"
                     value={logFilterDate}
@@ -1161,7 +1669,7 @@ const AdminPage = () => {
                     setLogFilterDate('');
                   }}
                 >
-                  ظ…ط³ط­ ط§ظ„ظپظ„ط§طھط±
+                  مسح الفلاتر
                 </Button>
               )}
             </div>
@@ -1170,7 +1678,7 @@ const AdminPage = () => {
               {filteredLogs.length === 0 ? (
                 <div className="text-center py-12 text-muted-foreground">
                   <Shield className="w-16 h-16 mx-auto mb-4 opacity-50" />
-                  <p className="text-lg">ظ„ط§ طھظˆط¬ط¯ ط³ط¬ظ„ط§طھ</p>
+                  <p className="text-lg">لا توجد سجلات</p>
                 </div>
               ) : (
                 filteredLogs.map((log) => (
@@ -1192,7 +1700,7 @@ const AdminPage = () => {
                             <XCircle className="w-5 h-5 text-destructive" />
                           )}
                           <span className={log.is_authorized ? 'text-green-500 font-medium' : 'text-destructive font-medium'}>
-                            {log.is_authorized ? 'ط¯ط®ظˆظ„ ظ…طµط±ط­' : 'ظ…ط­ط§ظˆظ„ط© ظپط§ط´ظ„ط©'}
+                            {log.is_authorized ? 'دخول مصرح' : 'محاولة فاشلة'}
                           </span>
                           {log.fingerprint_id && (
                             <span className="text-xs bg-muted px-2 py-1 rounded flex items-center gap-1">
@@ -1217,15 +1725,15 @@ const AdminPage = () => {
                       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
                         <div className="flex items-center gap-1 text-muted-foreground">
                           <Globe className="w-4 h-4" />
-                          <span>{log.ip_address || 'ط؛ظٹط± ظ…ط¹ط±ظˆظپ'}</span>
+                          <span>{log.ip_address || 'غير معروف'}</span>
                         </div>
                         <div className="flex items-center gap-1 text-muted-foreground">
                           <MapPin className="w-4 h-4" />
-                          <span>{log.country && log.city ? `${log.city}, ${log.country}` : 'ط؛ظٹط± ظ…ط¹ط±ظˆظپ'}</span>
+                          <span>{log.country && log.city ? `${log.city}, ${log.country}` : 'غير معروف'}</span>
                         </div>
                         <div className="flex items-center gap-1 text-muted-foreground">
                           <Smartphone className="w-4 h-4" />
-                          <span>{log.device_type || 'ط؛ظٹط± ظ…ط¹ط±ظˆظپ'}</span>
+                          <span>{log.device_type || 'غير معروف'}</span>
                         </div>
                         <div className="text-muted-foreground">
                           {log.browser} / {log.os}
@@ -1237,67 +1745,67 @@ const AdminPage = () => {
                     {expandedLogId === log.id && (
                       <div className="border-t border-border bg-muted/30 p-4 space-y-4">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-                          {/* ظ…ط¹ظ„ظˆظ…ط§طھ ط§ظ„ظ…ظˆظ‚ط¹ */}
+                          {/* معلومات الموقع */}
                           <div className="space-y-2">
                             <h4 className="font-medium flex items-center gap-2 text-primary">
                               <MapPin className="w-4 h-4" />
-                              ظ…ط¹ظ„ظˆظ…ط§طھ ط§ظ„ظ…ظˆظ‚ط¹
+                              معلومات الموقع
                             </h4>
                             <div className="bg-card rounded-lg p-3 space-y-1">
-                              <p><span className="text-muted-foreground">ط§ظ„ط¯ظˆظ„ط©:</span> {log.country || 'ط؛ظٹط± ظ…ط¹ط±ظˆظپ'}</p>
-                              <p><span className="text-muted-foreground">ط§ظ„ظ…ط¯ظٹظ†ط©:</span> {log.city || 'ط؛ظٹط± ظ…ط¹ط±ظˆظپ'}</p>
-                              <p><span className="text-muted-foreground">ط§ظ„ظ…ظ†ط·ظ‚ط©:</span> {log.region || 'ط؛ظٹط± ظ…ط¹ط±ظˆظپ'}</p>
-                              <p><span className="text-muted-foreground">ط§ظ„ط±ظ…ط² ط§ظ„ط¨ط±ظٹط¯ظٹ:</span> {log.postal || 'ط؛ظٹط± ظ…ط¹ط±ظˆظپ'}</p>
+                              <p><span className="text-muted-foreground">الدولة:</span> {log.country || 'غير معروف'}</p>
+                              <p><span className="text-muted-foreground">المدينة:</span> {log.city || 'غير معروف'}</p>
+                              <p><span className="text-muted-foreground">المنطقة:</span> {log.region || 'غير معروف'}</p>
+                              <p><span className="text-muted-foreground">الرمز البريدي:</span> {log.postal || 'غير معروف'}</p>
                               {log.latitude && log.longitude && (
-                                <p><span className="text-muted-foreground">ط§ظ„ط¥ط­ط¯ط§ط«ظٹط§طھ:</span> {log.latitude}, {log.longitude}</p>
+                                <p><span className="text-muted-foreground">الإحداثيات:</span> {log.latitude}, {log.longitude}</p>
                               )}
                             </div>
                           </div>
 
-                          {/* ظ…ط¹ظ„ظˆظ…ط§طھ ط§ظ„ط´ط¨ظƒط© */}
+                          {/* معلومات الشبكة */}
                           <div className="space-y-2">
                             <h4 className="font-medium flex items-center gap-2 text-primary">
                               <Wifi className="w-4 h-4" />
-                              ظ…ط¹ظ„ظˆظ…ط§طھ ط§ظ„ط´ط¨ظƒط©
+                              معلومات الشبكة
                             </h4>
                             <div className="bg-card rounded-lg p-3 space-y-1">
-                              <p><span className="text-muted-foreground">IP:</span> {log.ip_address || 'ط؛ظٹط± ظ…ط¹ط±ظˆظپ'}</p>
-                              <p><span className="text-muted-foreground">ظ…ط²ظˆط¯ ط§ظ„ط®ط¯ظ…ط©:</span> {log.isp || log.org || 'ط؛ظٹط± ظ…ط¹ط±ظˆظپ'}</p>
-                              <p><span className="text-muted-foreground">ASN:</span> {log.asn || 'ط؛ظٹط± ظ…ط¹ط±ظˆظپ'}</p>
-                              <p><span className="text-muted-foreground">ظ†ظˆط¹ ط§ظ„ط§طھطµط§ظ„:</span> {log.network_type || 'ط؛ظٹط± ظ…ط¹ط±ظˆظپ'}</p>
-                              <p><span className="text-muted-foreground">ظ†ظˆط¹ ط§ظ„ط´ط¨ظƒط©:</span> {log.connection_type || 'ط؛ظٹط± ظ…ط¹ط±ظˆظپ'}</p>
+                              <p><span className="text-muted-foreground">IP:</span> {log.ip_address || 'غير معروف'}</p>
+                              <p><span className="text-muted-foreground">مزود الخدمة:</span> {log.isp || log.org || 'غير معروف'}</p>
+                              <p><span className="text-muted-foreground">ASN:</span> {log.asn || 'غير معروف'}</p>
+                              <p><span className="text-muted-foreground">نوع الاتصال:</span> {log.network_type || 'غير معروف'}</p>
+                              <p><span className="text-muted-foreground">نوع الشبكة:</span> {log.connection_type || 'غير معروف'}</p>
                             </div>
                           </div>
 
-                          {/* ظ…ط¹ظ„ظˆظ…ط§طھ ط§ظ„ط¬ظ‡ط§ط² */}
+                          {/* معلومات الجهاز */}
                           <div className="space-y-2">
                             <h4 className="font-medium flex items-center gap-2 text-primary">
                               <Monitor className="w-4 h-4" />
-                              ظ…ط¹ظ„ظˆظ…ط§طھ ط§ظ„ط¬ظ‡ط§ط²
+                              معلومات الجهاز
                             </h4>
                             <div className="bg-card rounded-lg p-3 space-y-1">
-                              <p><span className="text-muted-foreground">ط§ظ„ظ†ظˆط¹:</span> {log.device_type || 'ط؛ظٹط± ظ…ط¹ط±ظˆظپ'}</p>
-                              <p><span className="text-muted-foreground">ط§ظ„ظ…طھطµظپط­:</span> {log.browser || 'ط؛ظٹط± ظ…ط¹ط±ظˆظپ'}</p>
-                              <p><span className="text-muted-foreground">ط§ظ„ظ†ط¸ط§ظ…:</span> {log.os || 'ط؛ظٹط± ظ…ط¹ط±ظˆظپ'}</p>
-                              <p><span className="text-muted-foreground">ط­ط¬ظ… ط§ظ„ط´ط§ط´ط©:</span> {log.screen_size || 'ط؛ظٹط± ظ…ط¹ط±ظˆظپ'}</p>
-                              <p><span className="text-muted-foreground">ط¹ظ…ظ‚ ط§ظ„ط£ظ„ظˆط§ظ†:</span> {log.color_depth || 'ط؛ظٹط± ظ…ط¹ط±ظˆظپ'}</p>
-                              <p><span className="text-muted-foreground">ظƒط«ط§ظپط© ط§ظ„ط¨ظƒط³ظ„:</span> {log.pixel_ratio || 'ط؛ظٹط± ظ…ط¹ط±ظˆظپ'}</p>
-                              <p><span className="text-muted-foreground">ط¯ط¹ظ… ط§ظ„ظ„ظ…ط³:</span> {log.touch_support ? 'ظ†ط¹ظ…' : 'ظ„ط§'}</p>
+                              <p><span className="text-muted-foreground">النوع:</span> {log.device_type || 'غير معروف'}</p>
+                              <p><span className="text-muted-foreground">المتصفح:</span> {log.browser || 'غير معروف'}</p>
+                              <p><span className="text-muted-foreground">النظام:</span> {log.os || 'غير معروف'}</p>
+                              <p><span className="text-muted-foreground">حجم الشاشة:</span> {log.screen_size || 'غير معروف'}</p>
+                              <p><span className="text-muted-foreground">عمق الألوان:</span> {log.color_depth || 'غير معروف'}</p>
+                              <p><span className="text-muted-foreground">كثافة البكسل:</span> {log.pixel_ratio || 'غير معروف'}</p>
+                              <p><span className="text-muted-foreground">دعم اللمس:</span> {log.touch_support ? 'نعم' : 'لا'}</p>
                             </div>
                           </div>
 
-                          {/* ظ…ط¹ظ„ظˆظ…ط§طھ ط§ظ„ظ…طھطµظپط­ */}
+                          {/* معلومات المتصفح */}
                           <div className="space-y-2">
                             <h4 className="font-medium flex items-center gap-2 text-primary">
                               <Globe className="w-4 h-4" />
-                              ظ…ط¹ظ„ظˆظ…ط§طھ ط§ظ„ظ…طھطµظپط­
+                              معلومات المتصفح
                             </h4>
                             <div className="bg-card rounded-lg p-3 space-y-1">
-                              <p><span className="text-muted-foreground">ط§ظ„ظ„ط؛ط©:</span> {log.language || 'ط؛ظٹط± ظ…ط¹ط±ظˆظپ'}</p>
-                              <p><span className="text-muted-foreground">ط§ظ„ظ…ظ†ط·ظ‚ط© ط§ظ„ط²ظ…ظ†ظٹط©:</span> {log.timezone || 'ط؛ظٹط± ظ…ط¹ط±ظˆظپ'}</p>
-                              <p><span className="text-muted-foreground">ط¹ط¯ط¯ ط§ظ„ط£ظ†ظˆظٹط©:</span> {log.hardware_concurrency || 'ط؛ظٹط± ظ…ط¹ط±ظˆظپ'}</p>
-                              <p><span className="text-muted-foreground">ط§ظ„ط°ط§ظƒط±ط©:</span> {log.device_memory ? `${log.device_memory} GB` : 'ط؛ظٹط± ظ…ط¹ط±ظˆظپ'}</p>
-                              <p><span className="text-muted-foreground">ط§ظ„ظ…طµط¯ط±:</span> {log.referrer || 'ظ…ط¨ط§ط´ط±'}</p>
+                              <p><span className="text-muted-foreground">اللغة:</span> {log.language || 'غير معروف'}</p>
+                              <p><span className="text-muted-foreground">المنطقة الزمنية:</span> {log.timezone || 'غير معروف'}</p>
+                              <p><span className="text-muted-foreground">عدد الأنوية:</span> {log.hardware_concurrency || 'غير معروف'}</p>
+                              <p><span className="text-muted-foreground">الذاكرة:</span> {log.device_memory ? `${log.device_memory} GB` : 'غير معروف'}</p>
+                              <p><span className="text-muted-foreground">المصدر:</span> {log.referrer || 'مباشر'}</p>
                             </div>
                           </div>
                         </div>
@@ -1318,7 +1826,7 @@ const AdminPage = () => {
                         {log.fingerprint_id && (
                           <div className="flex items-center gap-2 text-sm">
                             <Fingerprint className="w-4 h-4 text-primary" />
-                            <span className="text-muted-foreground">ط¨طµظ…ط© ط§ظ„ظ…طھطµظپط­:</span>
+                            <span className="text-muted-foreground">بصمة المتصفح:</span>
                             <code className="bg-muted px-2 py-1 rounded text-xs">{log.fingerprint_id}</code>
                           </div>
                         )}
@@ -1333,10 +1841,10 @@ const AdminPage = () => {
           {/* Videos Tab */}
           <TabsContent value="videos" className="space-y-4">
             {videosLoading ? (
-              <div className="text-center py-4 text-muted-foreground">ط¬ط§ط±ظچ طھط­ظ…ظٹظ„ ط§ظ„ظپظٹط¯ظٹظˆظ‡ط§طھ...</div>
+              <div className="text-center py-4 text-muted-foreground">جارٍ تحميل الفيديوهات...</div>
             ) : localVideos && localVideos.length > 0 ? (
               <div className="space-y-3">
-                <h4 className="font-medium text-sm text-muted-foreground">ط§ظ„ظپظٹط¯ظٹظˆظ‡ط§طھ ط§ظ„ط­ط§ظ„ظٹط© ({localVideos.length}) - ط§ط³ط­ط¨ ظ„ط¥ط¹ط§ط¯ط© ط§ظ„طھط±طھظٹط¨</h4>
+                <h4 className="font-medium text-sm text-muted-foreground">الفيديوهات الحالية ({localVideos.length}) - اسحب لإعادة الترتيب</h4>
                 <DndContext
                   sensors={sensors}
                   collisionDetection={closestCenter}
@@ -1360,41 +1868,41 @@ const AdminPage = () => {
             ) : (
               <div className="text-center py-8 text-muted-foreground">
                 <Video className="w-12 h-12 mx-auto mb-2 opacity-50" />
-                <p>ظ„ط§ طھظˆط¬ط¯ ظپظٹط¯ظٹظˆظ‡ط§طھ</p>
+                <p>لا توجد فيديوهات</p>
               </div>
             )}
 
             <div className="bg-card border border-border rounded-lg p-4 space-y-4">
               <h4 className="font-medium flex items-center gap-2">
                 <Plus className="w-5 h-5 text-primary" />
-                ط¥ط¶ط§ظپط© ظپظٹط¯ظٹظˆ ط¬ط¯ظٹط¯
+                إضافة فيديو جديد
               </h4>
               <Input
                 type="text"
                 value={videoTitle}
                 onChange={(e) => setVideoTitle(e.target.value)}
-                placeholder="ط¹ظ†ظˆط§ظ† ط§ظ„ظپظٹط¯ظٹظˆ"
+                placeholder="عنوان الفيديو"
               />
               <Input
                 type="url"
                 value={videoUrl}
                 onChange={(e) => setVideoUrl(e.target.value)}
-                placeholder="ط±ط§ط¨ط· YouTube ط£ظˆ Google Drive (ظ…ط«ط§ظ„: https://www.youtube.com/watch?v=... ط£ظˆ https://drive.google.com/file/d/...)"
+                placeholder="رابط YouTube أو Google Drive (مثال: https://www.youtube.com/watch?v=... أو https://drive.google.com/file/d/...)"
                 dir="ltr"
               />
 
-              {/* ظ…ط¹ط§ظٹظ†ط© ط§ظ„ظپظٹط¯ظٹظˆ */}
+              {/* معاينة الفيديو */}
               {videoUrl && (
                 <div className="border border-border rounded-lg overflow-hidden">
                   <div className="bg-muted/50 px-3 py-2 text-sm font-medium flex items-center gap-2">
                     <Video className="w-4 h-4" />
-                    ظ…ط¹ط§ظٹظ†ط© ط§ظ„ظپظٹط¯ظٹظˆ
+                    معاينة الفيديو
                   </div>
                   <div className="aspect-video">
                     {videoUrl.includes('youtube.com') || videoUrl.includes('youtu.be') ? (
                       <iframe
                         src={`https://www.youtube.com/embed/${getYouTubeVideoId(videoUrl)}`}
-                        title="ظ…ط¹ط§ظٹظ†ط©"
+                        title="معاينة"
                         className="w-full h-full"
                         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                         allowFullScreen
@@ -1402,7 +1910,7 @@ const AdminPage = () => {
                     ) : videoUrl.includes('drive.google.com') || videoUrl.includes('docs.google.com/file') ? (
                       <iframe
                         src={`https://drive.google.com/file/d/${getGoogleDriveFileId(videoUrl)}/preview`}
-                        title="ظ…ط¹ط§ظٹظ†ط©"
+                        title="معاينة"
                         className="w-full h-full"
                         allow="autoplay; encrypted-media"
                         allowFullScreen
@@ -1414,7 +1922,7 @@ const AdminPage = () => {
                         className="w-full h-full"
                         preload="metadata"
                       >
-                        ظ…طھطµظپط­ظƒ ظ„ط§ ظٹط¯ط¹ظ… طھط´ط؛ظٹظ„ ط§ظ„ظپظٹط¯ظٹظˆ
+                        متصفحك لا يدعم تشغيل الفيديو
                       </video>
                     )}
                   </div>
@@ -1427,7 +1935,7 @@ const AdminPage = () => {
                 className="w-full"
               >
                 <Plus className="w-4 h-4 ml-2" />
-                {savingVideo ? 'ط¬ط§ط±ظچ ط§ظ„ط¥ط¶ط§ظپط©...' : 'ط¥ط¶ط§ظپط© ط§ظ„ظپظٹط¯ظٹظˆ'}
+                {savingVideo ? 'جارٍ الإضافة...' : 'إضافة الفيديو'}
               </Button>
             </div>
           </TabsContent>
@@ -1436,7 +1944,7 @@ const AdminPage = () => {
           <TabsContent value="announcements" className="space-y-4">
             {announcements && announcements.length > 0 ? (
               <div className="space-y-3">
-                <h4 className="font-medium text-sm text-muted-foreground">ط§ظ„ط¥ط¹ظ„ط§ظ†ط§طھ ط§ظ„ط­ط§ظ„ظٹط© ({announcements.length})</h4>
+                <h4 className="font-medium text-sm text-muted-foreground">الإعلانات الحالية ({announcements.length})</h4>
                 {announcements.map((ann) => (
                   <div key={ann.id} className="bg-card border border-border rounded-lg p-4">
                     <div className="flex items-center justify-between gap-3">
@@ -1446,7 +1954,7 @@ const AdminPage = () => {
                             ann.type === 'error' ? 'bg-destructive/20 text-destructive' :
                               'bg-primary/20 text-primary'
                           }`}>
-                          {ann.type === 'success' ? 'ظ†ط¬ط§ط­' : ann.type === 'warning' ? 'طھظ†ط¨ظٹظ‡' : ann.type === 'error' ? 'ط®ط·ط£' : 'ط¥ط¹ظ„ط§ظ†'}
+                          {ann.type === 'success' ? 'نجاح' : ann.type === 'warning' ? 'تنبيه' : ann.type === 'error' ? 'خطأ' : 'إعلان'}
                         </span>
                         <p className="mt-2 text-sm">{ann.message}</p>
                       </div>
@@ -1464,30 +1972,30 @@ const AdminPage = () => {
             ) : (
               <div className="text-center py-8 text-muted-foreground">
                 <Megaphone className="w-12 h-12 mx-auto mb-2 opacity-50" />
-                <p>ظ„ط§ طھظˆط¬ط¯ ط¥ط¹ظ„ط§ظ†ط§طھ</p>
+                <p>لا توجد إعلانات</p>
               </div>
             )}
 
             <div className="bg-card border border-border rounded-lg p-4 space-y-4">
               <h4 className="font-medium flex items-center gap-2">
                 <Plus className="w-5 h-5 text-primary" />
-                ط¥ط¶ط§ظپط© ط¥ط¹ظ„ط§ظ† ط¬ط¯ظٹط¯
+                إضافة إعلان جديد
               </h4>
               <Input
                 type="text"
                 value={announcementMessage}
                 onChange={(e) => setAnnouncementMessage(e.target.value)}
-                placeholder="ظ†طµ ط§ظ„ط¥ط¹ظ„ط§ظ†"
+                placeholder="نص الإعلان"
               />
               <Select value={announcementType} onValueChange={setAnnouncementType}>
                 <SelectTrigger>
-                  <SelectValue placeholder="ظ†ظˆط¹ ط§ظ„ط¥ط¹ظ„ط§ظ†" />
+                  <SelectValue placeholder="نوع الإعلان" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="info">ط¥ط¹ظ„ط§ظ†</SelectItem>
-                  <SelectItem value="success">ظ†ط¬ط§ط­</SelectItem>
-                  <SelectItem value="warning">طھظ†ط¨ظٹظ‡</SelectItem>
-                  <SelectItem value="error">طھط­ط°ظٹط±</SelectItem>
+                  <SelectItem value="info">إعلان</SelectItem>
+                  <SelectItem value="success">نجاح</SelectItem>
+                  <SelectItem value="warning">تنبيه</SelectItem>
+                  <SelectItem value="error">تحذير</SelectItem>
                 </SelectContent>
               </Select>
               <Button
@@ -1496,7 +2004,7 @@ const AdminPage = () => {
                 className="w-full"
               >
                 <Plus className="w-4 h-4 ml-2" />
-                {savingAnnouncement ? 'ط¬ط§ط±ظچ ط§ظ„ط¥ط¶ط§ظپط©...' : 'ط¥ط¶ط§ظپط© ط§ظ„ط¥ط¹ظ„ط§ظ†'}
+                {savingAnnouncement ? 'جارٍ الإضافة...' : 'إضافة الإعلان'}
               </Button>
             </div>
           </TabsContent>
@@ -1505,7 +2013,7 @@ const AdminPage = () => {
           <TabsContent value="flash" className="space-y-4">
             {flashMessages && flashMessages.length > 0 ? (
               <div className="space-y-3">
-                <h4 className="font-medium text-sm text-muted-foreground">ط±ط³ط§ط¦ظ„ ط§ظ„ظپظ„ط§ط´ ط§ظ„ط­ط§ظ„ظٹط© ({flashMessages.length})</h4>
+                <h4 className="font-medium text-sm text-muted-foreground">رسائل الفلاش الحالية ({flashMessages.length})</h4>
                 {flashMessages.map((msg) => (
                   <div key={msg.id} className="bg-card border border-border rounded-lg p-4">
                     <div className="flex items-center justify-between gap-3">
@@ -1516,16 +2024,16 @@ const AdminPage = () => {
                             style={{ backgroundColor: msg.color }}
                           />
                           <span className="text-xs text-muted-foreground">
-                            {msg.text_direction === 'rtl' ? 'ظ…ظ† ط§ظ„ظٹظ…ظٹظ† ظ„ظ„ظٹط³ط§ط±' : 'ظ…ظ† ط§ظ„ظٹط³ط§ط± ظ„ظ„ظٹظ…ظٹظ†'}
+                            {msg.text_direction === 'rtl' ? 'من اليمين لليسار' : 'من اليسار لليمين'}
                           </span>
                           {msg.start_date && (
                             <span className="text-xs text-muted-foreground">
-                              ظ…ظ†: {new Date(msg.start_date).toLocaleDateString('ar-SA')}
+                              من: {new Date(msg.start_date).toLocaleDateString('ar-SA')}
                             </span>
                           )}
                           {msg.end_date && (
                             <span className="text-xs text-muted-foreground">
-                              ط¥ظ„ظ‰: {new Date(msg.end_date).toLocaleDateString('ar-SA')}
+                              إلى: {new Date(msg.end_date).toLocaleDateString('ar-SA')}
                             </span>
                           )}
                         </div>
@@ -1551,54 +2059,54 @@ const AdminPage = () => {
             ) : (
               <div className="text-center py-8 text-muted-foreground">
                 <Zap className="w-12 h-12 mx-auto mb-2 opacity-50" />
-                <p>ظ„ط§ طھظˆط¬ط¯ ط±ط³ط§ط¦ظ„ ظپظ„ط§ط´</p>
+                <p>لا توجد رسائل فلاش</p>
               </div>
             )}
 
             <div className="bg-card border border-border rounded-lg p-4 space-y-4">
               <h4 className="font-medium flex items-center gap-2">
                 <Plus className="w-5 h-5 text-primary" />
-                ط¥ط¶ط§ظپط© ط±ط³ط§ظ„ط© ظپظ„ط§ط´ ط¬ط¯ظٹط¯ط©
+                إضافة رسالة فلاش جديدة
               </h4>
 
               <Input
                 type="text"
                 value={flashMessage}
                 onChange={(e) => setFlashMessage(e.target.value)}
-                placeholder="ظ†طµ ط§ظ„ط±ط³ط§ظ„ط©"
+                placeholder="نص الرسالة"
               />
 
               <div className="grid grid-cols-3 gap-4">
                 <div>
-                  <label className="block text-sm mb-2">ط§طھط¬ط§ظ‡ ط§ظ„ظ†طµ</label>
+                  <label className="block text-sm mb-2">اتجاه النص</label>
                   <Select value={flashDirection} onValueChange={setFlashDirection}>
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="rtl">ظ…ظ† ط§ظ„ظٹظ…ظٹظ† ظ„ظ„ظٹط³ط§ط±</SelectItem>
-                      <SelectItem value="ltr">ظ…ظ† ط§ظ„ظٹط³ط§ط± ظ„ظ„ظٹظ…ظٹظ†</SelectItem>
+                      <SelectItem value="rtl">من اليمين لليسار</SelectItem>
+                      <SelectItem value="ltr">من اليسار لليمين</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
 
                 <div>
-                  <label className="block text-sm mb-2">ط­ط¬ظ… ط§ظ„ط®ط·</label>
+                  <label className="block text-sm mb-2">حجم الخط</label>
                   <Select value={flashFontSize} onValueChange={(v) => setFlashFontSize(v as 'sm' | 'md' | 'lg' | 'xl')}>
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="sm">طµط؛ظٹط±</SelectItem>
-                      <SelectItem value="md">ظ…طھظˆط³ط·</SelectItem>
-                      <SelectItem value="lg">ظƒط¨ظٹط±</SelectItem>
-                      <SelectItem value="xl">ظƒط¨ظٹط± ط¬ط¯ط§ظ‹</SelectItem>
+                      <SelectItem value="sm">صغير</SelectItem>
+                      <SelectItem value="md">متوسط</SelectItem>
+                      <SelectItem value="lg">كبير</SelectItem>
+                      <SelectItem value="xl">كبير جداً</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
 
                 <div>
-                  <label className="block text-sm mb-2">ط§ظ„ظ„ظˆظ†</label>
+                  <label className="block text-sm mb-2">اللون</label>
                   <div className="flex gap-2">
                     <Input
                       type="color"
@@ -1619,29 +2127,29 @@ const AdminPage = () => {
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm mb-2">طھط§ط±ظٹط® ط§ظ„ط¨ط¯ط§ظٹط© (ط§ط®طھظٹط§ط±ظٹ)</label>
+                  <label className="block text-sm mb-2">تاريخ البداية (اختياري)</label>
                   <Input
                     type="datetime-local"
                     value={flashStartDate}
                     onChange={(e) => setFlashStartDate(e.target.value)}
                   />
-                  <p className="text-xs text-muted-foreground mt-1">ط§طھط±ظƒظ‡ ظپط§ط±ط؛ط§ظ‹ ظ„ظ„ط¸ظ‡ظˆط± ظپظˆط±ط§ظ‹</p>
+                  <p className="text-xs text-muted-foreground mt-1">اتركه فارغاً للظهور فوراً</p>
                 </div>
 
                 <div>
-                  <label className="block text-sm mb-2">طھط§ط±ظٹط® ط§ظ„ظ†ظ‡ط§ظٹط© (ط§ط®طھظٹط§ط±ظٹ)</label>
+                  <label className="block text-sm mb-2">تاريخ النهاية (اختياري)</label>
                   <Input
                     type="datetime-local"
                     value={flashEndDate}
                     onChange={(e) => setFlashEndDate(e.target.value)}
                   />
-                  <p className="text-xs text-muted-foreground mt-1">ط§طھط±ظƒظ‡ ظپط§ط±ط؛ط§ظ‹ ظ„ط¹ط¯ظ… ط§ظ„ط§ظ†طھظ‡ط§ط،</p>
+                  <p className="text-xs text-muted-foreground mt-1">اتركه فارغاً لعدم الانتهاء</p>
                 </div>
               </div>
 
               {flashMessage && (
                 <div>
-                  <label className="block text-sm mb-2">ظ…ط¹ط§ظٹظ†ط©:</label>
+                  <label className="block text-sm mb-2">معاينة:</label>
                   <div
                     className="p-3 rounded-lg flex items-center gap-2 overflow-hidden"
                     style={{ backgroundColor: flashColor, color: getContrastColor(flashColor) }}
@@ -1664,27 +2172,27 @@ const AdminPage = () => {
                 className="w-full"
               >
                 <Plus className="w-4 h-4 ml-2" />
-                {savingFlash ? 'ط¬ط§ط±ظچ ط§ظ„ط¥ط¶ط§ظپط©...' : 'ط¥ط¶ط§ظپط© ط±ط³ط§ظ„ط© ط§ظ„ظپظ„ط§ط´'}
+                {savingFlash ? 'جارٍ الإضافة...' : 'إضافة رسالة الفلاش'}
               </Button>
             </div>
           </TabsContent>
 
-          {/* Notifications Tab - ط¥ط±ط³ط§ظ„ ط¥ط´ط¹ط§ط±ط§طھ */}
+          {/* Notifications Tab - إرسال إشعارات */}
           <TabsContent value="notifications" className="space-y-4">
-            {/* طھط¹ظٹظٹظ† ظ‡ط°ط§ ط§ظ„ط¬ظ‡ط§ط² ظƒظ…ط³ط¤ظˆظ„ */}
+            {/* تعيين هذا الجهاز كمسؤول */}
             <div className="bg-card border border-border rounded-lg p-4 space-y-4">
               <h4 className="font-medium flex items-center gap-2">
                 <Smartphone className="w-5 h-5 text-primary" />
-                طھط¹ظٹظٹظ† ط¬ظ‡ط§ط² ظƒظ…ط³ط¤ظˆظ„
+                تعيين جهاز كمسؤول
               </h4>
               <p className="text-sm text-muted-foreground">
-                ط£ط¯ط®ظ„ ط±ظ…ط² ط§ظ„ط¬ظ‡ط§ط² (Push Token) ظ„طھط¹ظٹظٹظ†ظ‡ ظƒط¬ظ‡ط§ط² ظ…ط³ط¤ظˆظ„ ظ„ط§ط³طھظ‚ط¨ط§ظ„ ط§ظ„ط¥ط´ط¹ط§ط±ط§طھ
+                أدخل رمز الجهاز (Push Token) لتعيينه كجهاز مسؤول لاستقبال الإشعارات
               </p>
               <div className="flex gap-2">
                 <Input
                   value={adminDeviceToken}
                   onChange={(e) => setAdminDeviceToken(e.target.value)}
-                  placeholder="ط±ظ…ط² ط§ظ„ط¬ظ‡ط§ط² (Push Token)"
+                  placeholder="رمز الجهاز (Push Token)"
                   className="flex-1"
                   dir="ltr"
                 />
@@ -1694,24 +2202,24 @@ const AdminPage = () => {
                   variant="outline"
                 >
                   <Shield className="w-4 h-4 ml-2" />
-                  {settingAdminDevice ? 'ط¬ط§ط±ظچ ط§ظ„طھط¹ظٹظٹظ†...' : 'طھط¹ظٹظٹظ† ظƒظ…ط³ط¤ظˆظ„'}
+                  {settingAdminDevice ? 'جارٍ التعيين...' : 'تعيين كمسؤول'}
                 </Button>
               </div>
             </div>
 
-            {/* ظ‚ط§ط¦ظ…ط© ط§ظ„ط£ط¬ظ‡ط²ط© ط§ظ„ظ…ط³ط¬ظ„ط© */}
+            {/* قائمة الأجهزة المسجلة */}
             <div className="bg-card border border-border rounded-lg p-4 space-y-4">
               <div className="flex justify-between items-center">
                 <h4 className="font-medium flex items-center gap-2">
                   <Bell className="w-5 h-5 text-primary" />
-                  ط§ظ„ط£ط¬ظ‡ط²ط© ط§ظ„ظ…ط³ط¬ظ„ط© ظ„ظ„ط¥ط´ط¹ط§ط±ط§طھ
+                  الأجهزة المسجلة للإشعارات
                 </h4>
                 <Button variant="ghost" size="sm" onClick={loadPushTokens}>
                   <RefreshCw className="w-4 h-4" />
                 </Button>
               </div>
               {pushTokensList.length === 0 ? (
-                <p className="text-sm text-muted-foreground text-center py-4">ظ„ط§ طھظˆط¬ط¯ ط£ط¬ظ‡ط²ط© ظ…ط³ط¬ظ„ط©</p>
+                <p className="text-sm text-muted-foreground text-center py-4">لا توجد أجهزة مسجلة</p>
               ) : (
                 <div className="space-y-2 max-h-[200px] overflow-y-auto">
                   {pushTokensList.map((device) => (
@@ -1726,7 +2234,7 @@ const AdminPage = () => {
                       {device.is_admin && (
                         <Badge variant="default" className="text-xs">
                           <Shield className="w-3 h-3 ml-1" />
-                          ظ…ط³ط¤ظˆظ„
+                          مسؤول
                         </Badge>
                       )}
                     </div>
@@ -1735,21 +2243,38 @@ const AdminPage = () => {
               )}
             </div>
 
-            {/* ط¥ط±ط³ط§ظ„ ط¥ط´ط¹ط§ط± */}
+            {/* زر اختبار الإشعارات */}
+            <div className="bg-card border border-border rounded-lg p-4 flex items-center justify-between">
+              <div>
+                <h4 className="font-medium flex items-center gap-2">
+                  <BellRing className="w-5 h-5 text-primary" />
+                  اختبار استلام الإشعارات
+                </h4>
+                <p className="text-sm text-muted-foreground">
+                  اختبر وصول التنبيهات على هذا الجهاز حالاً
+                </p>
+              </div>
+              <Button onClick={handleTestNotification} variant="outline" className="gap-2">
+                <Sparkles className="w-4 h-4" />
+                إرسال تنبيه تجريبي
+              </Button>
+            </div>
+
+            {/* إرسال إشعار */}
             <div className="bg-card border border-border rounded-lg p-4 space-y-4">
               <h4 className="font-medium flex items-center gap-2">
                 <Send className="w-5 h-5 text-primary" />
-                ط¥ط±ط³ط§ظ„ ط¥ط´ط¹ط§ط± ظ„ظ„ظ…ط³ط¤ظˆظ„ظٹظ†
+                إرسال إشعار للمستخدمين
               </h4>
               <Input
                 value={notifTitle}
                 onChange={(e) => setNotifTitle(e.target.value)}
-                placeholder="ط¹ظ†ظˆط§ظ† ط§ظ„ط¥ط´ط¹ط§ط±"
+                placeholder="عنوان الإشعار"
               />
               <Textarea
                 value={notifBody}
                 onChange={(e) => setNotifBody(e.target.value)}
-                placeholder="ظ†طµ ط§ظ„ط¥ط´ط¹ط§ط±..."
+                placeholder="نص الإشعار..."
                 className="min-h-[100px]"
               />
               <Button
@@ -1758,14 +2283,14 @@ const AdminPage = () => {
                 className="w-full"
               >
                 <Send className="w-4 h-4 ml-2" />
-                {sendingNotification ? 'ط¬ط§ط±ظچ ط§ظ„ط¥ط±ط³ط§ظ„...' : 'ط¥ط±ط³ط§ظ„ ظ„ظ„ظ…ط³ط¤ظˆظ„ظٹظ†'}
+                {sendingNotification ? 'جارٍ الإرسال...' : 'إرسال للجميع'}
               </Button>
             </div>
 
-            {/* ط³ط¬ظ„ ط§ظ„ط¥ط´ط¹ط§ط±ط§طھ */}
+            {/* سجل الإشعارات */}
             {notificationHistory.length > 0 && (
               <div className="space-y-3">
-                <h4 className="font-medium text-sm text-muted-foreground">ط§ظ„ط¥ط´ط¹ط§ط±ط§طھ ط§ظ„ط³ط§ط¨ظ‚ط© ({notificationHistory.length})</h4>
+                <h4 className="font-medium text-sm text-muted-foreground">الإشعارات السابقة ({notificationHistory.length})</h4>
                 {notificationHistory.map((notif) => (
                   <div key={notif.id} className="bg-card border border-border rounded-lg p-4">
                     <div className="flex justify-between items-start mb-2">
@@ -1784,19 +2309,19 @@ const AdminPage = () => {
                             <AlertDialogHeader>
                               <AlertDialogTitle className="flex items-center gap-2">
                                 <AlertTriangle className="w-5 h-5 text-destructive" />
-                                طھط£ظƒظٹط¯ ط§ظ„ط­ط°ظپ
+                                تأكيد الحذف
                               </AlertDialogTitle>
                               <AlertDialogDescription>
-                                ظ‡ظ„ ط£ظ†طھ ظ…طھط£ظƒط¯ ظ…ظ† ط­ط°ظپ ظ‡ط°ط§ ط§ظ„ط¥ط´ط¹ط§ط± ظ…ظ† ط§ظ„ط³ط¬ظ„طں
+                                هل أنت متأكد من حذف هذا الإشعار من السجل؟
                               </AlertDialogDescription>
                             </AlertDialogHeader>
                             <AlertDialogFooter className="flex-row-reverse gap-2">
-                              <AlertDialogCancel>ط¥ظ„ط؛ط§ط،</AlertDialogCancel>
+                              <AlertDialogCancel>إلغاء</AlertDialogCancel>
                               <AlertDialogAction
                                 onClick={() => handleDeleteNotification(notif.id)}
                                 className="bg-destructive hover:bg-destructive/90"
                               >
-                                ط­ط°ظپ
+                                حذف
                               </AlertDialogAction>
                             </AlertDialogFooter>
                           </AlertDialogContent>
@@ -1805,7 +2330,7 @@ const AdminPage = () => {
                     </div>
                     <p className="text-sm text-muted-foreground">{notif.body}</p>
                     <div className="mt-2 text-xs text-primary">
-                      ط£ظڈط±ط³ظ„ ط¥ظ„ظ‰ {notif.recipients_count} ط¬ظ‡ط§ط²
+                      أُرسل إلى {notif.recipients_count} جهاز
                     </div>
                   </div>
                 ))}
@@ -1814,15 +2339,15 @@ const AdminPage = () => {
           </TabsContent>
           <TabsContent value="settings" className="space-y-4">
 
-            {/* ظپطھط­/ط¥ط؛ظ„ط§ظ‚ ط§ظ„طµظ†ط¯ظˆظ‚ */}
+            {/* فتح/إغلاق الصندوق */}
             <div className="bg-card border border-border rounded-lg p-4 flex items-center justify-between">
               <div>
                 <h3 className="font-medium flex items-center gap-2">
                   <MessageSquare className="w-4 h-4" />
-                  طµظ†ط¯ظˆظ‚ ط§ظ„ط£ط³ط¦ظ„ط©
+                  صندوق الأسئلة
                 </h3>
                 <p className="text-sm text-muted-foreground">
-                  {isBoxOpen ? 'ط§ظ„طµظ†ط¯ظˆظ‚ ظ…ظپطھظˆط­ - ظٹظ…ظƒظ† ظ„ظ„ط²ظˆط§ط± ط¥ط±ط³ط§ظ„ ط§ظ„ط£ط³ط¦ظ„ط©' : 'ط§ظ„طµظ†ط¯ظˆظ‚ ظ…ط؛ظ„ظ‚ - ظ„ط§ ظٹظ…ظƒظ† ط¥ط±ط³ط§ظ„ ط§ظ„ط£ط³ط¦ظ„ط©'}
+                  {isBoxOpen ? 'الصندوق مفتوح - يمكن للزوار إرسال الأسئلة' : 'الصندوق مغلق - لا يمكن إرسال الأسئلة'}
                 </p>
               </div>
               <Switch
@@ -1836,10 +2361,10 @@ const AdminPage = () => {
               <div>
                 <h3 className="font-medium flex items-center gap-2">
                   <Timer className="w-4 h-4" />
-                  ط§ظ„ط¹ط¯ط§ط¯ ط§ظ„طھظ†ط§ط²ظ„ظٹ
+                  العداد التنازلي
                 </h3>
                 <p className="text-sm text-muted-foreground">
-                  {showCountdown ? 'ظٹط¸ظ‡ط± ط§ظ„ط¹ط¯ط§ط¯ ط§ظ„طھظ†ط§ط²ظ„ظٹ ظ„ظ„ط­ظ„ظ‚ط© ط§ظ„ظ‚ط§ط¯ظ…ط©' : 'ط§ظ„ط¹ط¯ط§ط¯ ط§ظ„طھظ†ط§ط²ظ„ظٹ ظ…ط®ظپظٹ'}
+                  {showCountdown ? 'يظهر العداد التنازلي للحلقة القادمة' : 'العداد التنازلي مخفي'}
                 </p>
               </div>
               <Switch
@@ -1849,16 +2374,16 @@ const AdminPage = () => {
               />
             </div>
 
-            {/* ط§ط®طھظٹط§ط± ظ†ظ…ط· ط§ظ„ط¹ط¯ط§ط¯ ط§ظ„طھظ†ط§ط²ظ„ظٹ */}
+            {/* اختيار نمط العداد التنازلي */}
             {showCountdown && (
               <div className="bg-card border border-border rounded-lg p-4 space-y-4">
                 <div>
                   <h3 className="font-medium flex items-center gap-2 mb-2">
                     <Clock className="w-4 h-4" />
-                    ظ†ظ…ط· ط§ظ„ط¹ط¯ط§ط¯ ط§ظ„طھظ†ط§ط²ظ„ظٹ
+                    نمط العداد التنازلي
                   </h3>
                   <p className="text-sm text-muted-foreground mb-4">
-                    ط§ط®طھط± ط§ظ„ظ†ظ…ط· ط§ظ„ظ…ظ†ط§ط³ط¨ ظˆط´ط§ظ‡ط¯ ط§ظ„ظ…ط¹ط§ظٹظ†ط© ظ‚ط¨ظ„ ط§ظ„ط­ظپط¸
+                    اختر النمط المناسب وشاهد المعاينة قبل الحفظ
                   </p>
                 </div>
 
@@ -1874,7 +2399,7 @@ const AdminPage = () => {
                       className="flex flex-col items-center justify-center rounded-lg border-2 border-muted bg-popover p-3 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary cursor-pointer"
                     >
                       <Monitor className="w-6 h-6 mb-1" />
-                      <span className="text-sm font-medium">LED ط±ظ‚ظ…ظٹ</span>
+                      <span className="text-sm font-medium">LED رقمي</span>
                     </Label>
                   </div>
                   <div>
@@ -1884,7 +2409,7 @@ const AdminPage = () => {
                       className="flex flex-col items-center justify-center rounded-lg border-2 border-muted bg-popover p-3 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary cursor-pointer"
                     >
                       <Clock className="w-6 h-6 mb-1" />
-                      <span className="text-sm font-medium">ظƒظ„ط§ط³ظٹظƒظٹ</span>
+                      <span className="text-sm font-medium">كلاسيكي</span>
                     </Label>
                   </div>
                   <div>
@@ -1894,7 +2419,7 @@ const AdminPage = () => {
                       className="flex flex-col items-center justify-center rounded-lg border-2 border-muted bg-popover p-3 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary cursor-pointer"
                     >
                       <Timer className="w-6 h-6 mb-1" />
-                      <span className="text-sm font-medium">ط¨ط³ظٹط·</span>
+                      <span className="text-sm font-medium">بسيط</span>
                     </Label>
                   </div>
                   <div>
@@ -1904,7 +2429,7 @@ const AdminPage = () => {
                       className="flex flex-col items-center justify-center rounded-lg border-2 border-muted bg-popover p-3 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary cursor-pointer"
                     >
                       <RefreshCw className="w-6 h-6 mb-1" />
-                      <span className="text-sm font-medium">ط¯ط§ط¦ط±ظٹ</span>
+                      <span className="text-sm font-medium">دائري</span>
                     </Label>
                   </div>
                   <div>
@@ -1914,19 +2439,19 @@ const AdminPage = () => {
                       className="flex flex-col items-center justify-center rounded-lg border-2 border-muted bg-popover p-3 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary cursor-pointer"
                     >
                       <Sparkles className="w-6 h-6 mb-1" />
-                      <span className="text-sm font-medium">ط²ط¬ط§ط¬ظٹ 3D</span>
+                      <span className="text-sm font-medium">زجاجي 3D</span>
                     </Label>
                   </div>
                 </RadioGroup>
 
-                {/* طھط®طµظٹطµ ط§ظ„ط£ظ„ظˆط§ظ† */}
+                {/* تخصيص الألوان */}
                 <div className="border-t border-border pt-4 mt-4">
                   <h4 className="text-sm font-medium text-muted-foreground mb-4 flex items-center gap-2">
-                    ًںژ¨ طھط®طµظٹطµ ط§ظ„ط£ظ„ظˆط§ظ†
+                    🎨 تخصيص الألوان
                   </h4>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div>
-                      <label className="block text-sm mb-2">ظ„ظˆظ† ط§ظ„ط®ظ„ظپظٹط©</label>
+                      <label className="block text-sm mb-2">لون الخلفية</label>
                       <div className="flex gap-2">
                         <Input
                           type="color"
@@ -1944,7 +2469,7 @@ const AdminPage = () => {
                       </div>
                     </div>
                     <div>
-                      <label className="block text-sm mb-2">ظ„ظˆظ† ط§ظ„ظ†طµ</label>
+                      <label className="block text-sm mb-2">لون النص</label>
                       <div className="flex gap-2">
                         <Input
                           type="color"
@@ -1962,7 +2487,7 @@ const AdminPage = () => {
                       </div>
                     </div>
                     <div>
-                      <label className="block text-sm mb-2">ظ„ظˆظ† ط§ظ„ط¥ط·ط§ط±</label>
+                      <label className="block text-sm mb-2">لون الإطار</label>
                       <div className="flex gap-2">
                         <Input
                           type="color"
@@ -1986,13 +2511,13 @@ const AdminPage = () => {
                     variant="outline"
                     className="w-full mt-4"
                   >
-                    {savingCountdownColors ? 'ط¬ط§ط±ظچ ط§ظ„ط­ظپط¸...' : 'ط­ظپط¸ ط§ظ„ط£ظ„ظˆط§ظ†'}
+                    {savingCountdownColors ? 'جارٍ الحفظ...' : 'حفظ الألوان'}
                   </Button>
                 </div>
 
-                {/* ظ…ط¹ط§ظٹظ†ط© ط§ظ„ظ†ظ…ط· */}
+                {/* معاينة النمط */}
                 <div className="mt-4">
-                  <h4 className="text-sm font-medium text-muted-foreground mb-3">ظ…ط¹ط§ظٹظ†ط©:</h4>
+                  <h4 className="text-sm font-medium text-muted-foreground mb-3">معاينة:</h4>
                   <div className="max-w-xl mx-auto">
                     <CountdownTimerPreview
                       style={countdownStyle}
@@ -2008,7 +2533,7 @@ const AdminPage = () => {
                   disabled={savingCountdownStyle || countdownStyle === (settings?.countdown_style ?? 1)}
                   className="w-full"
                 >
-                  {savingCountdownStyle ? 'ط¬ط§ط±ظچ ط§ظ„ط­ظپط¸...' : 'ط­ظپط¸ ظ†ظ…ط· ط§ظ„ط¹ط¯ط§ط¯'}
+                  {savingCountdownStyle ? 'جارٍ الحفظ...' : 'حفظ نمط العداد'}
                 </Button>
               </div>
             )}
@@ -2017,10 +2542,10 @@ const AdminPage = () => {
               <div>
                 <h3 className="font-medium flex items-center gap-2">
                   <Hash className="w-4 h-4" />
-                  ط¹ط¯ط§ط¯ ط§ظ„ط£ط³ط¦ظ„ط©
+                  عداد الأسئلة
                 </h3>
                 <p className="text-sm text-muted-foreground">
-                  {showQuestionCount ? 'ظٹط¸ظ‡ط± ط¹ط¯ط¯ ط§ظ„ط£ط³ط¦ظ„ط© ط§ظ„ظ…ط³طھظ„ظ…ط© ظ„ظ„ط²ظˆط§ط±' : 'ط¹ط¯ط§ط¯ ط§ظ„ط£ط³ط¦ظ„ط© ظ…ط®ظپظٹ ط¹ظ† ط§ظ„ط²ظˆط§ط±'}
+                  {showQuestionCount ? 'يظهر عدد الأسئلة المستلمة للزوار' : 'عداد الأسئلة مخفي عن الزوار'}
                 </p>
               </div>
               <Switch
@@ -2034,10 +2559,10 @@ const AdminPage = () => {
               <div>
                 <h3 className="font-medium flex items-center gap-2">
                   <Smartphone className="w-4 h-4" />
-                  طµظپط­ط© ط§ظ„طھط«ط¨ظٹطھ
+                  صفحة التثبيت
                 </h3>
                 <p className="text-sm text-muted-foreground">
-                  {showInstallPage ? 'طµظپط­ط© ط§ظ„طھط«ط¨ظٹطھ ظ…طھط§ط­ط© ظ„ظ„ط²ظˆط§ط± (/install)' : 'طµظپط­ط© ط§ظ„طھط«ط¨ظٹطھ ظ…ط¹ط·ظ‘ظ„ط©'}
+                  {showInstallPage ? 'صفحة التثبيت متاحة للزوار (/install)' : 'صفحة التثبيت معطّلة'}
                 </p>
               </div>
               <Switch
@@ -2051,10 +2576,10 @@ const AdminPage = () => {
               <div>
                 <h3 className="font-medium flex items-center gap-2">
                   <Shield className="w-4 h-4" />
-                  ظپظ„طھط± ط§ظ„ظ…ط­طھظˆظ‰
+                  فلتر المحتوى
                 </h3>
                 <p className="text-sm text-muted-foreground">
-                  {contentFilterEnabled ? 'ظٹظ…ظ†ط¹ ط§ظ„ط£ط³ط¦ظ„ط© ط؛ظٹط± ط§ظ„ظ„ط§ط¦ظ‚ط©' : 'ظپظ„طھط± ط§ظ„ظ…ط­طھظˆظ‰ ظ…ط¹ط·ظ‘ظ„'}
+                  {contentFilterEnabled ? 'يمنع الأسئلة غير اللائقة' : 'فلتر المحتوى معطّل'}
                 </p>
               </div>
               <Switch
@@ -2067,7 +2592,7 @@ const AdminPage = () => {
             <div className="bg-card border border-border rounded-lg p-4 space-y-4">
               <div className="flex items-center gap-2">
                 <Calendar className="w-5 h-5 text-primary" />
-                <h3 className="font-medium">ظ…ظˆط¹ط¯ ط§ظ„ط­ظ„ظ‚ط© ط§ظ„ظ‚ط§ط¯ظ…ط©</h3>
+                <h3 className="font-medium">موعد الحلقة القادمة</h3>
               </div>
               <Input
                 type="datetime-local"
@@ -2075,10 +2600,75 @@ const AdminPage = () => {
                 onChange={(e) => setNextSessionDate(e.target.value)}
               />
               <Button onClick={handleUpdateSession} disabled={isLoading || !nextSessionDate}>
-                {isLoading ? 'ط¬ط§ط±ظچ ط§ظ„ط­ظپط¸...' : 'ط­ظپط¸ ط§ظ„ظ…ظˆط¹ط¯'}
+                {isLoading ? 'جارٍ الحفظ...' : 'حفظ الموعد'}
               </Button>
             </div>
 
+            {/* قسم الإشعارات */}
+            <div className="bg-card border border-border rounded-lg p-4 space-y-4">
+              <div className="flex items-center gap-2">
+                <BellRing className="w-5 h-5 text-primary" />
+                <h3 className="font-medium">إشعارات الأسئلة الجديدة</h3>
+              </div>
+              <p className="text-sm text-muted-foreground">
+                تلقي إشعارات في المتصفح عند وصول أسئلة جديدة أثناء تواجدك في لوحة التحكم
+              </p>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
+                  <div>
+                    <p className="font-medium text-sm">إشعارات الصوت</p>
+                    <p className="text-xs text-muted-foreground">تشغيل صوت عند وصول سؤال جديد</p>
+                  </div>
+                  <Switch
+                    checked={soundEnabled}
+                    onCheckedChange={setSoundEnabled}
+                  />
+                </div>
+
+                <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
+                  <div>
+                    <p className="font-medium text-sm">اختبار الإشعارات</p>
+                    <p className="text-xs text-muted-foreground">تأكد من عمل الأيقونة والتنبيه</p>
+                  </div>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={handleTestNotification}
+                  >
+                    <Send className="w-4 h-4 ml-2" />
+                    اختبار
+                  </Button>
+                </div>
+              </div>
+
+              <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
+                <div>
+                  <p className="font-medium text-sm">إشعارات المتصفح</p>
+                  <p className="text-xs text-muted-foreground">طلب إذن المتصفح وإرسال تنبيه تفعيل</p>
+                </div>
+                <Button
+                  size="sm"
+                  variant="default"
+                  onClick={() => {
+                    if ('Notification' in window) {
+                      Notification.requestPermission().then(permission => {
+                        if (permission === 'granted') {
+                          new Notification('تم تفعيل الإشعارات!', {
+                            body: 'ستصلك إشعارات عند وصول أسئلة جديدة',
+                            icon: '/icon-mosque.png'
+                          });
+                          toast({ title: '✓ تم التفعيل', description: 'تم تفعيل إشعارات المتصفح بنجاح' });
+                        }
+                      });
+                    }
+                  }}
+                >
+                  <Bell className="w-4 h-4 ml-2" />
+                  تفعيل الآن
+                </Button>
+              </div>
+            </div>
           </TabsContent>
         </Tabs>
       </main>
@@ -2097,7 +2687,3 @@ function getContrastColor(hexColor: string): string {
 }
 
 export default AdminPage;
-
-
-
-

@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useSettings } from '@/hooks/useSettings';
 import { CountdownTimer } from '@/components/CountdownTimer';
 import { VideoList } from '@/components/VideoList';
@@ -12,7 +12,6 @@ import { FlashMessageBanner } from '@/components/FlashMessageBanner';
 import { QuestionCounter } from '@/components/QuestionCounter';
 import { Button } from '@/components/ui/button';
 import { BookOpen, Menu, X, Download, MessageSquare } from 'lucide-react';
-import { useBrowserNotifications } from '@/hooks/useBrowserNotifications';
 import mosqueImage from '@/assets/mosque-exterior.jpg';
 import ShareButton from '@/components/ShareButton';
 import ReadingMode from '@/components/ReadingMode';
@@ -20,6 +19,7 @@ import ReportProblem from '@/components/ReportProblem';
 
 const Index = () => {
   const { t, i18n } = useTranslation();
+  const navigate = useNavigate();
   const [logoTaps, setLogoTaps] = useState(0);
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -27,7 +27,6 @@ const Index = () => {
   const formSectionRef = useRef<HTMLDivElement>(null);
 
   // تفعيل إشعارات المتصفح
-  useBrowserNotifications();
 
   const isRTL = i18n.language === 'ar';
 
@@ -45,25 +44,25 @@ const Index = () => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.ctrlKey && e.shiftKey && e.key === 'A') {
         e.preventDefault();
-        window.location.href = '/admin';
+        navigate('/admin');
       }
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, []);
+  }, [navigate]);
 
   // Mobile: 5 taps on logo
   const handleLogoTap = useCallback(() => {
     setLogoTaps((prev) => {
       const newCount = prev + 1;
       if (newCount >= 5) {
-        window.location.href = '/admin';
+        navigate('/admin');
         return 0;
       }
       setTimeout(() => setLogoTaps(0), 2000);
       return newCount;
     });
-  }, []);
+  }, [navigate]);
 
   const scrollToForm = () => {
     formSectionRef.current?.scrollIntoView({ behavior: 'smooth' });
