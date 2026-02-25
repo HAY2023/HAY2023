@@ -194,12 +194,14 @@ export function useOfflineQuestions() {
 
       for (const q of questions) {
         try {
-          const { error } = await supabase
+          const { data, error } = await supabase
             .from('questions')
             .insert({
               category: q.category,
               question_text: q.question_text,
-            });
+            })
+            .select('id')
+            .single();
 
           if (!error) {
             await deleteQuestionFromDB(q.id);
@@ -208,7 +210,7 @@ export function useOfflineQuestions() {
               await supabase.functions.invoke('send-notification', {
                 body: {
                   action: 'notify-new-question',
-                  question_id: q.id,
+                  question_id: data?.id,
                 }
               });
             } catch (notifyError) {
