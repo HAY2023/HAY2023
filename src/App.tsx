@@ -46,7 +46,13 @@ const App = () => {
       sessionStorage.setItem('hasVisited', 'true');
 
       // Attempt to register for push notifications on first visit/startup
-      requestPermission().catch(console.error);
+      try {
+        requestPermission().catch(() => {
+          // Push notifications not available on this platform - this is fine
+        });
+      } catch {
+        // Ignore errors - push may not be supported
+      }
     } else {
       setShowSplash(false);
     }
