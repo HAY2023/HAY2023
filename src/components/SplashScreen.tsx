@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import mosqueHeroImage from '@/assets/mosque-hero.jpg';
 
 interface SplashScreenProps {
   onComplete?: () => void;
@@ -127,7 +128,7 @@ export function SplashScreen({ onComplete, duration = 1500 }: SplashScreenProps)
               {/* الشعار */}
               <div className="relative w-32 h-32 md:w-40 md:h-40 rounded-3xl bg-card border-2 border-border shadow-2xl flex items-center justify-center overflow-hidden">
                 <img
-                  src="https://bagmmxiclfysesjdcgrk.supabase.co/storage/v1/object/public/assets/mosque-hero.jpg"
+                  src={mosqueHeroImage}
                   alt="صندوق الفتوى مسجد الإيمان"
                   className="w-full h-full object-cover"
                 />
