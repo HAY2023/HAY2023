@@ -52,18 +52,24 @@ jobs:
             src-tauri/target/release/bundle/**
 
       - name: Decode PFX certificate from secret
-        if: ${{ secrets.WINDOWS_PFX && secrets.WINDOWS_PFX_PASSWORD }}
+        env:
+          WINDOWS_PFX: ${{ secrets.WINDOWS_PFX }}
+          WINDOWS_PFX_PASSWORD: ${{ secrets.WINDOWS_PFX_PASSWORD }}
+        if: ${{ env.WINDOWS_PFX != '' && env.WINDOWS_PFX_PASSWORD != '' }}
         shell: pwsh
         run: |
-          $pfxBase64 = '${{ secrets.WINDOWS_PFX }}'
+          $pfxBase64 = $env:WINDOWS_PFX
           $pfxBytes = [System.Convert]::FromBase64String($pfxBase64)
           [IO.File]::WriteAllBytes('certificate.pfx', $pfxBytes)
 
       - name: Sign Windows installers (if certificate provided)
-        if: ${{ secrets.WINDOWS_PFX && secrets.WINDOWS_PFX_PASSWORD }}
+        env:
+          WINDOWS_PFX: ${{ secrets.WINDOWS_PFX }}
+          WINDOWS_PFX_PASSWORD: ${{ secrets.WINDOWS_PFX_PASSWORD }}
+        if: ${{ env.WINDOWS_PFX != '' && env.WINDOWS_PFX_PASSWORD != '' }}
         shell: pwsh
         run: |
-          $pfxPass = '${{ secrets.WINDOWS_PFX_PASSWORD }}'
+          $pfxPass = $env:WINDOWS_PFX_PASSWORD
           $signtool = 'C:\Program Files (x86)\Windows Kits\10\bin\x64\signtool.exe'
           if (-Not (Test-Path $signtool)) { $signtool = 'signtool' }
           $installers = Get-ChildItem -Path src-tauri/target/release/bundle -Recurse -Include *.exe,*.msi,*.msix | ForEach-Object { $_.FullName }
