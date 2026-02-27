@@ -41,6 +41,9 @@ jobs:
       - name: Add Windows target
         run: rustup target add x86_64-pc-windows-msvc
 
+      - name: Setup MSVC developer command prompt
+        uses: ilammy/msvc-dev-cmd@v1
+
       - name: Build Tauri (Windows)
         run: npm run tauri:build
 
