@@ -17,16 +17,42 @@ export interface Settings {
 }
 
 export function useSettings() {
+  const queryClient = useQueryClient();
+
+  // مفتاح حفظ الإعدادات في المتصفح
+  const SETTINGS_CACHE_KEY = 'sandouq_settings_offline';
+
   return useQuery({
     queryKey: ['settings'],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('settings')
-        .select('id, is_box_open, next_session_date, video_url, video_title, show_countdown, show_question_count, show_install_page, countdown_style, countdown_bg_color, countdown_text_color, countdown_border_color')
-        .maybeSingle();
+      try {
+        const { data, error } = await supabase
+          .from('settings')
+          .select('id, is_box_open, next_session_date, video_url, video_title, show_countdown, show_question_count, show_install_page, countdown_style, countdown_bg_color, countdown_text_color, countdown_border_color')
+          .maybeSingle();
 
-      if (error) throw error;
-      return data as Settings | null;
+        if (error) throw error;
+
+        // حفظ نسخة محلياً للعمل أوفلاين
+        if (data) {
+          localStorage.setItem(SETTINGS_CACHE_KEY, JSON.stringify(data));
+        }
+
+        return data as Settings | null;
+      } catch (err) {
+        // إذا فشل الاتصال بالإنترنت، جرب جلب النسخة المخزنة محلياً
+        const cached = localStorage.getItem(SETTINGS_CACHE_KEY);
+        if (cached) {
+          console.log('Using offline cached settings');
+          return JSON.parse(cached) as Settings;
+        }
+        throw err;
+      }
+    },
+    initialData: () => {
+      // محاولة التحميل من المخبأ المحلي عند بدء التطبيق فوراً
+      const cached = localStorage.getItem(SETTINGS_CACHE_KEY);
+      return cached ? JSON.parse(cached) as Settings : undefined;
     },
     refetchInterval: 5000,
   });

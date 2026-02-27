@@ -13,7 +13,7 @@ import { QuestionCounter } from '@/components/QuestionCounter';
 import { Button } from '@/components/ui/button';
 import { BookOpen, Menu, X, Download, MessageSquare } from 'lucide-react';
 import { useBrowserNotifications } from '@/hooks/useBrowserNotifications';
-import mosqueImage from '@/assets/mosque-exterior.jpg';
+const mosqueImage = "https://bagmmxiclfysesjdcgrk.supabase.co/storage/v1/object/public/assets/mosque-exterior.jpg";
 import ShareButton from '@/components/ShareButton';
 import ReadingMode from '@/components/ReadingMode';
 import ReportProblem from '@/components/ReportProblem';

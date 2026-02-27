@@ -75,7 +75,19 @@ serve(async (req) => {
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    const { action, token, device_type, notification, admin_password, question } = await req.json();
+    const body = await req.json();
+    const { token, device_type, notification, admin_password } = body;
+    let { action, question } = body;
+
+    // دعم الـ Database Webhooks تلقائياً
+    // إذا كان الطلب قادماً من تريجر قاعدة البيانات عند إضافة سؤال جديد
+    if (body.type === 'INSERT' && body.table === 'questions' && body.record) {
+      action = 'notify-admin';
+      question = {
+        category: body.record.category,
+        question_text: body.record.question_text
+      };
+    }
 
     // ====== Action: register token (public) ======
     if (action === 'register') {

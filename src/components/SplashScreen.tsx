@@ -127,7 +127,7 @@ export function SplashScreen({ onComplete, duration = 1500 }: SplashScreenProps)
               {/* الشعار */}
               <div className="relative w-32 h-32 md:w-40 md:h-40 rounded-3xl bg-card border-2 border-border shadow-2xl flex items-center justify-center overflow-hidden">
                 <img
-                  src="/favicon.jpg"
+                  src="https://bagmmxiclfysesjdcgrk.supabase.co/storage/v1/object/public/assets/mosque-hero.jpg"
                   alt="صندوق الفتوى مسجد الإيمان"
                   className="w-full h-full object-cover"
                 />
