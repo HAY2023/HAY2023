@@ -1,9 +1,13 @@
 import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
-  appId: 'app.lovable.fe1945067cd94de8aafee158e44b1ea7',
-  appName: 'صندوق فتوى',
+  appId: 'app.sandouq_fatwa',
+  appName: 'صندوق الفتوى',
   webDir: 'dist',
+  server: {
+    // التطبيق يحمّل من الملفات المحلية (dist) بدلاً من خادم بعيد
+    cleartext: true
+  },
   plugins: {
     PushNotifications: {
       presentationOptions: ['badge', 'sound', 'alert']
@@ -14,7 +18,7 @@ const config: CapacitorConfig = {
       sound: 'notification.wav'
     },
     SplashScreen: {
-      launchShowDuration: 2000,
+      launchShowDuration: 3000,
       launchAutoHide: true,
       backgroundColor: '#f5f0e8',
       androidSplashResourceName: 'splash',
@@ -25,6 +29,13 @@ const config: CapacitorConfig = {
     }
   },
   android: {
+    buildOptions: {
+      keystorePath: null,
+      keystorePassword: null,
+      keystoreAlias: null,
+      keystoreAliasPassword: null,
+      releaseType: 'APK'
+    },
     allowMixedContent: true,
     captureInput: true,
     webContentsDebuggingEnabled: false
