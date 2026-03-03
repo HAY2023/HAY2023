@@ -29,9 +29,9 @@ export default defineConfig(({ mode }) => ({
 
     VitePWA({
       registerType: "autoUpdate",
-      includeAssets: ["favicon.jpg", "icon-512.png"],
+      includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'mask-icon.svg', 'icon-mosque.png'],
       manifest: {
-        name: "صندوق الفتوى مسجد الإيمان - 150 مسكن",
+        name: "صندوق فتوى - مسجد الإيمان 150 مسكن",
         short_name: "صندوق فتوى",
         description: "نجمع استفساراتكم الشرعية ويتم الإجابة عليها في حلقات دورية بمسجد الإيمان",
         theme_color: "#1a1a2e",
@@ -73,15 +73,30 @@ export default defineConfig(({ mode }) => ({
         navigateFallbackDenylist: [/^\/api/],
         runtimeCaching: [
           {
-            urlPattern: /^https:\/\/bagmmxiclfysesjdcgrk\.supabase\.co\/.*/i,
-            handler: 'NetworkFirst',
+            // تخزين بيانات Supabase (الإعدادات وغيرها)
+            urlPattern: /^https:\/\/bagmmxiclfysesjdcgrk\.supabase\.co\/rest\/.*/i,
+            handler: 'StaleWhileRevalidate',
             options: {
-              cacheName: 'supabase-cache',
+              cacheName: 'supabase-data-cache',
               expiration: {
                 maxEntries: 100,
-                maxAgeSeconds: 60 * 60 * 24,
+                maxAgeSeconds: 60 * 60 * 24, // يوم واحد
               },
-              networkTimeoutSeconds: 10,
+            },
+          },
+          {
+            // تخزين الصور الخارجية من Supabase بصورة دائمة تقريباً
+            urlPattern: /^https:\/\/bagmmxiclfysesjdcgrk\.supabase\.co\/storage\/.*/i,
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'supabase-assets-cache',
+              expiration: {
+                maxEntries: 50,
+                maxAgeSeconds: 60 * 60 * 24 * 30, // 30 يوم
+              },
+              cacheableResponse: {
+                statuses: [0, 200],
+              },
             },
           },
           {

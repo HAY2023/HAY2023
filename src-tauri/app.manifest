@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<assembly xmlns="urn:schemas-microsoft-com:asm.v1" manifestVersion="1.0">
+  <assemblyIdentity
+    version="1.0.0.0"
+    processorArchitecture="*"
+    name="صندوق الفتوى مسجد الإيمان"
+    type="win32"
+  />
+  <description>صندوق الفتوى مسجد الإيمان - 150 مسكن - تطبيق لإدارة الأسئلة والإشعارات</description>
+
+  <!-- Windows Common Controls Dependency -->
+  <dependency>
+    <dependentAssembly>
+      <assemblyIdentity
+        type="win32"
+        name="Microsoft.Windows.Common-Controls"
+        version="6.0.0.0"
+        processorArchitecture="*"
+        publicKeyToken="6595b64144ccf1df"
+        language="*"
+      />
+    </dependentAssembly>
+  </dependency>
+
+  <!-- Security Information -->
+  <trustInfo xmlns="urn:schemas-microsoft-com:security">
+    <security>
+      <requestedPrivileges>
+        <!-- Running as user (without requiring admin rights) -->
+        <!-- Change to "highestAvailable" or "requireAdministrator" if needed -->
+        <requestedExecutionLevel level="asInvoker" uiAccess="false"/>
+      </requestedPrivileges>
+    </security>
+  </trustInfo>
+
+  <!-- Windows Settings -->
+  <asmv3:application xmlns:asmv3="urn:schemas-microsoft-com:asm.v3">
+    <asmv3:windowsSettings xmlns="http://schemas.microsoft.com/SMI/2005/WindowsSettings">
+      <!-- Enable high DPI awareness for modern displays -->
+      <dpiAware>true</dpiAware>
+      <!-- Disable fullscreen optimizations if needed -->
+      <disableFullscreenOptimizations>false</disableFullscreenOptimizations>
+    </asmv3:windowsSettings>
+  </asmv3:application>
+
+  <!-- Compatibility Settings -->
+  <compatibility xmlns="urn:schemas-microsoft-com:compatibility">
+    <application>
+      <!-- Windows 10+ compatibility -->
+      <supportedOS Id="{8e0f7a12-bfb3-4fe8-b9a5-48fd50a15a9a}"/>
+      <!-- Windows 11 compatibility -->
+      <supportedOS Id="{35138b9a-5d96-4fbd-8e2d-a2440225f93a}"/>
+    </application>
+  </compatibility>
+</assembly>

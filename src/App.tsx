@@ -7,6 +7,7 @@ import { ThemeProvider } from "next-themes";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useRealtimeNotifications } from "@/hooks/useRealtimeNotifications";
+import { usePushNotifications } from "@/hooks/usePushNotifications";
 import { SplashScreen } from "@/components/SplashScreen";
 import { ConnectionStatus } from "@/components/ui/ConnectionStatus";
 import Index from "./pages/Index";
@@ -35,16 +36,27 @@ const App = () => {
   const [showSplash, setShowSplash] = useState(true);
   const [isFirstVisit, setIsFirstVisit] = useState(false);
 
+  const { requestPermission } = usePushNotifications();
+
   useEffect(() => {
     // Check if it's the first visit in this session
     const hasVisited = sessionStorage.getItem('hasVisited');
     if (!hasVisited) {
       setIsFirstVisit(true);
       sessionStorage.setItem('hasVisited', 'true');
+
+      // Attempt to register for push notifications on first visit/startup
+      try {
+        requestPermission().catch(() => {
+          // Push notifications not available on this platform - this is fine
+        });
+      } catch {
+        // Ignore errors - push may not be supported
+      }
     } else {
       setShowSplash(false);
     }
-  }, []);
+  }, [requestPermission]);
 
   const handleSplashComplete = () => {
     setShowSplash(false);
