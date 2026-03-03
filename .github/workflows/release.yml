@@ -53,20 +53,37 @@ jobs:
         run: npm run tauri:build
 
       - name: Decode PFX certificate from secret (Windows)
-        if: ${{ matrix.platform == 'windows' && secrets.WINDOWS_PFX != '' && secrets.WINDOWS_PFX_PASSWORD != '' }}
+        if: ${{ matrix.platform == 'windows' }}
         shell: pwsh
         env:
           WINDOWS_PFX: ${{ secrets.WINDOWS_PFX }}
+          WINDOWS_PFX_PASSWORD: ${{ secrets.WINDOWS_PFX_PASSWORD }}
         run: |
+          if ([string]::IsNullOrWhiteSpace($env:WINDOWS_PFX) -or [string]::IsNullOrWhiteSpace($env:WINDOWS_PFX_PASSWORD)) {
+            Write-Host "Windows signing secrets are missing; skipping certificate decode."
+            exit 0
+          }
+
           $pfxBytes = [Convert]::FromBase64String($env:WINDOWS_PFX)
           [IO.File]::WriteAllBytes('certificate.pfx', $pfxBytes)
 
       - name: Sign Windows installers (if certificate provided)
-        if: ${{ matrix.platform == 'windows' && secrets.WINDOWS_PFX != '' && secrets.WINDOWS_PFX_PASSWORD != '' }}
+        if: ${{ matrix.platform == 'windows' }}
         shell: pwsh
         env:
+          WINDOWS_PFX: ${{ secrets.WINDOWS_PFX }}
           WINDOWS_PFX_PASSWORD: ${{ secrets.WINDOWS_PFX_PASSWORD }}
         run: |
+          if ([string]::IsNullOrWhiteSpace($env:WINDOWS_PFX) -or [string]::IsNullOrWhiteSpace($env:WINDOWS_PFX_PASSWORD)) {
+            Write-Host "Windows signing secrets are missing; skipping signing."
+            exit 0
+          }
+
+          if (-Not (Test-Path 'certificate.pfx')) {
+            Write-Host "certificate.pfx not found; skipping signing."
+            exit 0
+          }
+
           $signtool = 'C:\Program Files (x86)\Windows Kits\10\bin\x64\signtool.exe'
           if (-Not (Test-Path $signtool)) { $signtool = 'signtool' }
 
