@@ -38,7 +38,9 @@ Any tag starting with `v` triggers the unified workflow.
 
 - Dependencies are installed with `npm ci`.
 - `package-lock.json` must exist in the repository.
-- Android build expects a release keystore from secrets.
+- Android build mode:
+  - Signed release APK when Android secrets are configured.
+  - Debug APK fallback when Android secrets are missing.
 - Release job publishes both:
   - Windows installer files (`*.exe`)
   - Android APK files (`*.apk`)
@@ -49,7 +51,7 @@ Any tag starting with `v` triggers the unified workflow.
 
 - Confirm all four Android secrets are configured.
 - Ensure the keystore alias/password match the actual keystore.
-- Check the `Validate Android signing secrets` step in workflow logs.
+- Check the `Resolve Android build mode` step in workflow logs.
 
 ### APK verification fails
 
