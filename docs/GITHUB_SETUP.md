@@ -34,6 +34,16 @@ git push origin v1.2.3
 
 Any tag starting with `v` triggers the unified workflow.
 
+## Auto Web Deploy
+
+- Workflow: `.github/workflows/web-deploy.yml`
+- Trigger: every push to any branch
+- Result: site is deployed automatically to GitHub Pages
+
+To enable it once:
+1. Open repository `Settings` -> `Pages`.
+2. In `Build and deployment`, set `Source` to `GitHub Actions`.
+
 ## CI Contracts
 
 - Dependencies are installed with `npm ci`.
