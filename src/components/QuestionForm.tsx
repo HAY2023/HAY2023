@@ -11,7 +11,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
-import { CheckCircle, Send, Tag, MessageSquare, Sparkles, Loader2, WifiOff, CloudUpload, Eye, Pencil, Trash2, X, AlertTriangle, Clock } from 'lucide-react';
+import { CheckCircle, Send, Tag, MessageSquare, Sparkles, Loader2, WifiOff, CloudUpload, Eye, Pencil, Trash2, X, AlertTriangle } from 'lucide-react';
 import { VoiceInput } from '@/components/VoiceInput';
 import {
   Dialog,
@@ -35,16 +35,15 @@ export function QuestionForm() {
   const { toast } = useToast();
   const { data: settings } = useSettings();
   const submitQuestion = useSubmitQuestion();
-  const {
-    isOnline,
-    pendingCount,
-    saveForLater,
+  const { 
+    isOnline, 
+    pendingCount, 
+    saveForLater, 
     isSyncing,
     offlineQuestions,
     updateQuestion,
     deleteQuestion,
-    getOfflineQuestions,
-    clearAllQuestions
+    getOfflineQuestions
   } = useOfflineQuestions();
 
   const isRTL = i18n.language === 'ar';
@@ -117,7 +116,7 @@ export function QuestionForm() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
+    
     // فحص المحتوى إذا كان الفلتر مفعّل
     if (isContentFilterEnabled) {
       const contentCheck = checkQuestionContent(questionText);
@@ -131,14 +130,14 @@ export function QuestionForm() {
         setContentWarning(message);
         return;
       }
-
+      
       if (contentCheck.isWarning) {
         const message = getContentFilterMessage(contentCheck, i18n.language);
         setContentWarning(message);
         // نسمح بالإرسال مع تحذير
       }
     }
-
+    
     const validation = validateWithToast(
       questionSchema,
       {
@@ -221,20 +220,11 @@ export function QuestionForm() {
   if (isSubmitted) {
     return (
       <div className="text-center py-8 animate-in fade-in duration-500">
-        {!isOnline ? (
-          <Clock className="w-16 h-16 text-amber-500 mx-auto mb-6 animate-pulse" />
-        ) : (
-          <CheckCircle className="w-16 h-16 text-primary mx-auto mb-6" />
-        )}
-        <h3 className="text-2xl font-bold mb-4">
-          {!isOnline
-            ? (i18n.language === 'ar' ? 'تم الحفظ في المسودات' : 'Saved to Drafts')
-            : t('form.successTitle')
-          }
-        </h3>
+        <CheckCircle className="w-16 h-16 text-primary mx-auto mb-6" />
+        <h3 className="text-2xl font-bold mb-4">{t('form.successTitle')}</h3>
         <p className="text-muted-foreground text-lg mb-8 max-w-md mx-auto">
-          {!isOnline
-            ? (i18n.language === 'ar' ? 'سؤالك لم يُرسل بعد؛ تم حفظه محلياً وسيتم إرساله تلقائياً فور توفر الإنترنت.' : 'Your question was not sent yet; it is saved locally and will be sent automatically once online.')
+          {!isOnline 
+            ? (i18n.language === 'ar' ? 'تم حفظ سؤالك وسيُرسل عند الاتصال بالإنترنت' : 'Your question was saved and will be sent when online')
             : t('form.successMessage')
           }
         </p>
@@ -250,14 +240,15 @@ export function QuestionForm() {
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* حالة الاتصال وعرض الأسئلة المحفوظة */}
         {(!isOnline || pendingCount > 0) && (
-          <div className={`flex items-center justify-between gap-2 p-3 rounded-lg text-sm ${isOnline ? 'bg-amber-500/10 text-amber-700 dark:text-amber-400' : 'bg-destructive/10 text-destructive'
-            }`}>
+          <div className={`flex items-center justify-between gap-2 p-3 rounded-lg text-sm ${
+            isOnline ? 'bg-amber-500/10 text-amber-700 dark:text-amber-400' : 'bg-destructive/10 text-destructive'
+          }`}>
             <div className="flex items-center gap-2">
               {isOnline ? (
                 <>
                   <CloudUpload className="w-4 h-4 animate-pulse" />
                   <span>
-                    {i18n.language === 'ar'
+                    {i18n.language === 'ar' 
                       ? `جارٍ إرسال ${pendingCount} سؤال محفوظ...`
                       : `Syncing ${pendingCount} saved questions...`
                     }
@@ -267,7 +258,7 @@ export function QuestionForm() {
                 <>
                   <WifiOff className="w-4 h-4" />
                   <span>
-                    {i18n.language === 'ar'
+                    {i18n.language === 'ar' 
                       ? `غير متصل - ${pendingCount > 0 ? `${pendingCount} سؤال محفوظ` : 'سيُحفظ سؤالك'}`
                       : `Offline - ${pendingCount > 0 ? `${pendingCount} saved` : 'Your question will be saved'}`
                     }
@@ -276,14 +267,16 @@ export function QuestionForm() {
               )}
             </div>
             {pendingCount > 0 && (
-              <button
-                type="button"
+              <Button 
+                type="button" 
+                variant="ghost" 
+                size="sm"
                 onClick={handleViewOfflineQuestions}
-                className="flex items-center gap-1 hover:underline font-medium"
+                className="gap-1"
               >
                 <Eye className="w-4 h-4" />
                 {i18n.language === 'ar' ? 'عرض' : 'View'}
-              </button>
+              </Button>
             )}
           </div>
         )}
@@ -328,7 +321,7 @@ export function QuestionForm() {
             <span>{t('form.questionLabel')}</span>
             <span className="text-destructive">{t('form.required')}</span>
           </label>
-          <div className="flex gap-2">
+        <div className="space-y-3">
             <Textarea
               value={questionText}
               onChange={(e) => {
@@ -336,11 +329,11 @@ export function QuestionForm() {
                 setContentWarning(null);
               }}
               placeholder={t('form.questionPlaceholder')}
-              className="min-h-[120px] resize-none bg-background flex-1"
+              className="min-h-[120px] resize-none bg-background w-full"
               dir={isRTL ? 'rtl' : 'ltr'}
             />
-            <div className="flex flex-col gap-2 justify-end">
-              <VoiceInput
+            <div className="flex gap-3 justify-center">
+              <VoiceInput 
                 onTranscript={handleVoiceTranscript}
                 disabled={submitQuestion.isPending || isCorrecting}
               />
@@ -351,17 +344,17 @@ export function QuestionForm() {
                 onClick={handleCorrectQuestion}
                 disabled={isCorrecting || !questionText.trim() || questionText.trim().length < 10}
                 title={i18n.language === 'ar' ? "تصحيح السؤال تلقائياً" : "Auto-correct question"}
-                className="h-10 w-10"
+                className="h-12 w-12 rounded-xl border-2 border-accent/30 hover:border-accent hover:bg-accent/10 shadow-md hover:shadow-lg transition-all"
               >
                 {isCorrecting ? (
-                  <Loader2 className="w-4 h-4 animate-spin" />
+                  <Loader2 className="w-5 h-5 animate-spin" />
                 ) : (
-                  <Sparkles className="w-4 h-4" />
+                  <Sparkles className="w-5 h-5 text-accent" />
                 )}
               </Button>
             </div>
           </div>
-
+          
           {/* تحذير المحتوى */}
           {contentWarning && (
             <div className="flex items-center gap-2 p-3 rounded-lg bg-amber-500/10 text-amber-700 dark:text-amber-400 text-sm mt-2">
@@ -369,7 +362,7 @@ export function QuestionForm() {
               <span>{contentWarning}</span>
             </div>
           )}
-
+          
           {/* عداد الأحرف */}
           <div className="flex justify-between items-center text-xs text-muted-foreground mt-1">
             <span>{questionText.length} / 2000</span>
@@ -409,25 +402,10 @@ export function QuestionForm() {
       {/* نافذة عرض الأسئلة المحفوظة */}
       <Dialog open={showOfflineQuestions} onOpenChange={setShowOfflineQuestions}>
         <DialogContent className="max-w-lg" dir={isRTL ? 'rtl' : 'ltr'}>
-          <DialogHeader className="flex flex-row items-center justify-between">
+          <DialogHeader>
             <DialogTitle>
               {i18n.language === 'ar' ? 'الأسئلة المحفوظة' : 'Saved Questions'}
             </DialogTitle>
-            {offlineQuestions.length > 0 && (
-              <Button
-                variant="destructive"
-                size="sm"
-                onClick={async () => {
-                  if (confirm(i18n.language === 'ar' ? 'هل أنت متأكد من حذف جميع الأسئلة؟' : 'Are you sure you want to clear all questions?')) {
-                    await clearAllQuestions();
-                  }
-                }}
-                className="gap-2"
-              >
-                <Trash2 className="w-4 h-4" />
-                {i18n.language === 'ar' ? 'مسح الكل' : 'Clear All'}
-              </Button>
-            )}
           </DialogHeader>
           <div className="space-y-3 max-h-96 overflow-y-auto">
             {offlineQuestions.length === 0 ? (

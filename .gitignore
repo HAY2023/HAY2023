@@ -12,14 +12,6 @@ dist
 dist-ssr
 *.local
 
-# Electron build artifacts
-/release
-/out
-*.exe
-*.dmg
-*.AppImage
-*.deb
-
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
@@ -30,19 +22,3 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
-
-# Tauri
-/src-tauri/target
-#/src-tauri/gen/android
-/src-tauri/gen/schemas
-/src-tauri/Cargo.lock
-/src-tauri/Cargo.lock
-
-# Local builds
-Youcef-Sandouq-Local*
-*.zip
-*.dll
-
-Youcef-Sandouq/
-/temp_unzip/
-/src-tauri/target/

@@ -234,8 +234,8 @@ export function VoiceInput({ onTranscript, disabled }: VoiceInputProps) {
         onClick={toggleListening}
         disabled={disabled}
         className={`
-          relative transition-all duration-300 overflow-hidden
-          ${isListening ? 'ring-2 ring-destructive ring-offset-2' : ''}
+          relative transition-all duration-300 overflow-hidden h-12 w-12 rounded-xl border-2 shadow-md hover:shadow-lg
+          ${isListening ? 'ring-2 ring-destructive ring-offset-2 border-destructive' : 'border-primary/30 hover:border-primary hover:bg-primary/10'}
         `}
         title={isListening ? 
           (i18n.language === 'fr' ? 'Arrêter' : i18n.language === 'en' ? 'Stop' : 'إيقاف') :
@@ -256,7 +256,7 @@ export function VoiceInput({ onTranscript, disabled }: VoiceInputProps) {
             <span className="absolute -top-1 -right-1 w-3 h-3 bg-destructive rounded-full animate-ping" />
           </>
         ) : (
-          <Mic className="h-4 w-4" />
+          <Mic className="h-5 w-5 text-primary" />
         )}
       </Button>
       

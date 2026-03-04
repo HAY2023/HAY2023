@@ -1,0 +1,54 @@
+{
+  "$schema": "https://raw.githubusercontent.com/electron-userland/electron-builder/master/packages/app-builder-lib/scheme.json",
+  "appId": "app.sandouq.fatwa",
+  "productName": "صندوق فتوى",
+  "copyright": "مسجد الإيمان 150 مسكن",
+  "directories": {
+    "output": "release",
+    "buildResources": "build"
+  },
+  "files": [
+    "dist/**/*",
+    "electron/**/*",
+    "public/favicon.jpg",
+    "public/icon-512.png"
+  ],
+  "win": {
+    "target": [
+      {
+        "target": "nsis",
+        "arch": ["x64", "ia32"]
+      },
+      {
+        "target": "portable",
+        "arch": ["x64"]
+      }
+    ],
+    "icon": "public/icon-512.png",
+    "artifactName": "${productName}-${version}-${arch}.${ext}"
+  },
+  "nsis": {
+    "oneClick": false,
+    "allowToChangeInstallationDirectory": true,
+    "installerIcon": "public/icon-512.png",
+    "uninstallerIcon": "public/icon-512.png",
+    "installerHeaderIcon": "public/icon-512.png",
+    "createDesktopShortcut": true,
+    "createStartMenuShortcut": true,
+    "shortcutName": "صندوق فتوى",
+    "language": "1025"
+  },
+  "portable": {
+    "artifactName": "${productName}-Portable-${version}.${ext}"
+  },
+  "linux": {
+    "target": ["AppImage", "deb"],
+    "icon": "public/icon-512.png",
+    "category": "Education"
+  },
+  "mac": {
+    "target": ["dmg"],
+    "icon": "public/icon-512.png",
+    "category": "public.app-category.education"
+  }
+}

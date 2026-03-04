@@ -1,14 +1,14 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react-swc";
 import path from "path";
-
+import { componentTagger } from "lovable-tagger";
 import { VitePWA } from "vite-plugin-pwa";
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => ({
   server: {
     host: "::",
-    port: 5173,
+    port: 8080,
   },
   build: {
     // تحسين السرعة
@@ -26,10 +26,10 @@ export default defineConfig(({ mode }) => ({
   },
   plugins: [
     react(),
-
+    mode === "development" && componentTagger(),
     VitePWA({
       registerType: "autoUpdate",
-      includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'mask-icon.svg', 'icon-mosque.png'],
+      includeAssets: ["favicon.jpg", "icon-512.png"],
       manifest: {
         name: "صندوق فتوى - مسجد الإيمان 150 مسكن",
         short_name: "صندوق فتوى",
@@ -73,30 +73,15 @@ export default defineConfig(({ mode }) => ({
         navigateFallbackDenylist: [/^\/api/],
         runtimeCaching: [
           {
-            // تخزين بيانات Supabase (الإعدادات وغيرها)
-            urlPattern: /^https:\/\/bagmmxiclfysesjdcgrk\.supabase\.co\/rest\/.*/i,
-            handler: 'StaleWhileRevalidate',
+            urlPattern: /^https:\/\/bagmmxiclfysesjdcgrk\.supabase\.co\/.*/i,
+            handler: 'NetworkFirst',
             options: {
-              cacheName: 'supabase-data-cache',
+              cacheName: 'supabase-cache',
               expiration: {
                 maxEntries: 100,
-                maxAgeSeconds: 60 * 60 * 24, // يوم واحد
+                maxAgeSeconds: 60 * 60 * 24,
               },
-            },
-          },
-          {
-            // تخزين الصور الخارجية من Supabase بصورة دائمة تقريباً
-            urlPattern: /^https:\/\/bagmmxiclfysesjdcgrk\.supabase\.co\/storage\/.*/i,
-            handler: 'CacheFirst',
-            options: {
-              cacheName: 'supabase-assets-cache',
-              expiration: {
-                maxEntries: 50,
-                maxAgeSeconds: 60 * 60 * 24 * 30, // 30 يوم
-              },
-              cacheableResponse: {
-                statuses: [0, 200],
-              },
+              networkTimeoutSeconds: 10,
             },
           },
           {

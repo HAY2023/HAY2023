@@ -377,10 +377,12 @@ export type Database = {
       settings: {
         Row: {
           content_filter_enabled: boolean | null
+          countdown_animation_type: number | null
           countdown_bg_color: string | null
           countdown_border_color: string | null
           countdown_style: number | null
           countdown_text_color: string | null
+          countdown_title: string | null
           created_at: string
           id: string
           is_box_open: boolean
@@ -396,10 +398,12 @@ export type Database = {
         }
         Insert: {
           content_filter_enabled?: boolean | null
+          countdown_animation_type?: number | null
           countdown_bg_color?: string | null
           countdown_border_color?: string | null
           countdown_style?: number | null
           countdown_text_color?: string | null
+          countdown_title?: string | null
           created_at?: string
           id?: string
           is_box_open?: boolean
@@ -415,10 +419,12 @@ export type Database = {
         }
         Update: {
           content_filter_enabled?: boolean | null
+          countdown_animation_type?: number | null
           countdown_bg_color?: string | null
           countdown_border_color?: string | null
           countdown_style?: number | null
           countdown_text_color?: string | null
+          countdown_title?: string | null
           created_at?: string
           id?: string
           is_box_open?: boolean
@@ -546,6 +552,7 @@ export type Database = {
         }
         Returns: string
       }
+      check_admin_lock_status: { Args: never; Returns: Json }
       delete_access_log_authenticated: {
         Args: { p_log_id: string; p_password: string }
         Returns: boolean
@@ -754,26 +761,70 @@ export type Database = {
         Args: { p_password: string; p_report_id: string; p_status: string }
         Returns: boolean
       }
-      update_settings_authenticated: {
-        Args: {
-          p_content_filter_enabled?: boolean
-          p_countdown_bg_color?: string
-          p_countdown_border_color?: string
-          p_countdown_style?: number
-          p_countdown_text_color?: string
-          p_is_box_open?: boolean
-          p_maintenance_message?: string
-          p_maintenance_mode?: boolean
-          p_next_session_date?: string
-          p_password: string
-          p_show_countdown?: boolean
-          p_show_install_page?: boolean
-          p_show_question_count?: boolean
-          p_video_title?: string
-          p_video_url?: string
-        }
-        Returns: boolean
-      }
+      update_settings_authenticated:
+        | {
+            Args: {
+              p_content_filter_enabled?: boolean
+              p_countdown_animation_type?: number
+              p_countdown_bg_color?: string
+              p_countdown_border_color?: string
+              p_countdown_style?: number
+              p_countdown_text_color?: string
+              p_countdown_title?: string
+              p_is_box_open?: boolean
+              p_maintenance_message?: string
+              p_maintenance_mode?: boolean
+              p_next_session_date?: string
+              p_password: string
+              p_show_countdown?: boolean
+              p_show_install_page?: boolean
+              p_show_question_count?: boolean
+              p_video_title?: string
+              p_video_url?: string
+            }
+            Returns: boolean
+          }
+        | {
+            Args: {
+              p_content_filter_enabled?: boolean
+              p_countdown_bg_color?: string
+              p_countdown_border_color?: string
+              p_countdown_style?: number
+              p_countdown_text_color?: string
+              p_is_box_open?: boolean
+              p_maintenance_message?: string
+              p_maintenance_mode?: boolean
+              p_next_session_date?: string
+              p_password: string
+              p_show_countdown?: boolean
+              p_show_install_page?: boolean
+              p_show_question_count?: boolean
+              p_video_title?: string
+              p_video_url?: string
+            }
+            Returns: boolean
+          }
+        | {
+            Args: {
+              p_content_filter_enabled?: boolean
+              p_countdown_bg_color?: string
+              p_countdown_border_color?: string
+              p_countdown_style?: number
+              p_countdown_text_color?: string
+              p_countdown_title?: string
+              p_is_box_open?: boolean
+              p_maintenance_message?: string
+              p_maintenance_mode?: boolean
+              p_next_session_date?: string
+              p_password: string
+              p_show_countdown?: boolean
+              p_show_install_page?: boolean
+              p_show_question_count?: boolean
+              p_video_title?: string
+              p_video_url?: string
+            }
+            Returns: boolean
+          }
       update_video_authenticated: {
         Args: {
           p_password: string
