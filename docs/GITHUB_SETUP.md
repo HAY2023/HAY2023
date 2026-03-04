@@ -14,6 +14,8 @@ This project uses one primary release workflow:
 - `ANDROID_KEY_ALIAS`
 - `ANDROID_KEY_PASSWORD`
 
+If these Android secrets are missing, CI now falls back to building a **debug APK** so release generation does not stop.
+
 ### Windows signing (optional)
 
 - `WINDOWS_PFX`

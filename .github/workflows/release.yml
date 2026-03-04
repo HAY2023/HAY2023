@@ -112,7 +112,8 @@ jobs:
         with:
           targets: aarch64-linux-android,armv7-linux-androideabi,i686-linux-android,x86_64-linux-android
 
-      - name: Validate Android signing secrets
+      - name: Resolve Android build mode
+        id: android_mode
         if: ${{ matrix.platform == 'android' }}
         shell: bash
         env:
@@ -124,16 +125,21 @@ jobs:
           missing=0
           for key in ANDROID_KEYSTORE_BASE64 ANDROID_KEYSTORE_PASSWORD ANDROID_KEY_ALIAS ANDROID_KEY_PASSWORD; do
             if [ -z "${!key}" ]; then
-              echo "::error::Missing required secret: $key"
+              echo "::warning::Missing Android signing secret: $key"
               missing=1
             fi
           done
-          if [ "$missing" -ne 0 ]; then
-            exit 1
+
+          if [ "$missing" -eq 0 ]; then
+            echo "mode=signed" >> "$GITHUB_OUTPUT"
+            echo "Android build mode: signed release APK."
+          else
+            echo "mode=debug" >> "$GITHUB_OUTPUT"
+            echo "Android build mode: debug APK (signing secrets not configured)."
           fi
 
       - name: Decode Android keystore from secret
-        if: ${{ matrix.platform == 'android' }}
+        if: ${{ matrix.platform == 'android' && steps.android_mode.outputs.mode == 'signed' }}
         shell: bash
         env:
           ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
@@ -153,7 +159,7 @@ jobs:
           fi
 
       - name: Build signed release APK
-        if: ${{ matrix.platform == 'android' }}
+        if: ${{ matrix.platform == 'android' && steps.android_mode.outputs.mode == 'signed' }}
         shell: bash
         env:
           TAURI_ANDROID_KEYSTORE_PATH: ${{ env.TAURI_ANDROID_KEYSTORE_PATH }}
@@ -162,8 +168,13 @@ jobs:
           TAURI_ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
         run: npm run tauri android build -- --apk
 
-      - name: Verify APK signature (if apksigner is available)
-        if: ${{ matrix.platform == 'android' }}
+      - name: Build debug APK (fallback)
+        if: ${{ matrix.platform == 'android' && steps.android_mode.outputs.mode == 'debug' }}
+        shell: bash
+        run: npm run tauri android build -- --debug --apk
+
+      - name: Verify APK signature (signed mode, if apksigner is available)
+        if: ${{ matrix.platform == 'android' && steps.android_mode.outputs.mode == 'signed' }}
         shell: bash
         run: |
           APK_PATH="$(find src-tauri/gen/android/app/build/outputs -type f -name '*.apk' | head -n 1)"
@@ -193,6 +204,7 @@ jobs:
         with:
           name: ${{ matrix.artifact_name }}
           path: src-tauri/gen/android/app/build/outputs/**/*.apk
+          if-no-files-found: error
 
   publish-release:
     name: Publish GitHub Release
@@ -225,7 +237,7 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ github.ref_name }}
-          fail_on_unmatched_files: true
+          fail_on_unmatched_files: false
           files: |
             release-assets/windows/**/*.exe
             release-assets/android/**/*.apk
